@@ -1,0 +1,261 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Electoral Dashboard :: Routing</title>
+    <link rel="stylesheet" href="{% static 'css2/my_routing.css' %}" />
+    <link  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- Leaflet Routing Machine CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <!-- Leaflet Routing Machine JS -->
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.4.2/Control.FullScreen.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.4.2/Control.FullScreen.min.js"></script>
+    <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+    <script>
+
+      var my_routing_image = "{% static 'images2/crescent3.png' %}"
+
+    </script>
+    </script>
+    
+  </head>
+  <body>
+    <div id="map"></div>
+    <button id="toggle-directions"><i class="fa-solid fa-diamond-turn-right fa-sm"></i><span class="hover-text">Get direction</span></button>
+    <div class="formBlock">
+      <form id="form">
+        <input type="text" name="start" class="input" style="width: 48px; height: 20px; font-size: 14px;" id="start" placeholder="Start" list="start-options" />
+        <datalist id="start-options">
+          <option value="current_location">Use Current Location</option>
+          <!-- Options populated by JavaScript -->
+        </datalist>
+        <input type="text" name="end" class="input" style="width: 50px; height: 20px; font-size: 14px;" id="destination" style="" placeholder="End" list="end-options" />
+        <datalist id="end-options">
+          <!-- Options populated by JavaScript -->
+        </datalist>
+        <button type="submit" style="font-size: 14px">GO</button>   
+      </form>
+    </div>
+    <button class="live-track" id="toggle-tracking"><i class="fa-solid fa-street-view fa-sm"></i><span class="hover-text2">Live Tracking</span></button>
+    <button id="reset-map"><i class="fa-solid fa-rotate-right fa-sm"></i><span class="hover-text3">Reset</span></button>
+    <a id="return-dashboard" href="" ><button><i class="fa-solid fa-grip fa-sm"></i><span class="hover-text4">Dashboard</span></button></a>
+    <button type="button" class="btn btn-danger" id="but1" data-bs-toggle="modal" data-bs-target="#exampleModal">
+      <i class="fa-solid fa-envelope fa-lg" id="up-icon22"></i>
+    </button>
+
+    <button type="button" class="btn btn-success" id="but2" data-bs-toggle="modal" data-bs-target="#exampleModal2">
+      <i class="fa-brands fa-whatsapp fa-lg" id="up-icon22"></i>
+    </button>
+
+    <button type="button" class="btn btn-primary" id="but3" data-bs-toggle="modal" data-bs-target="#exampleModal3">
+      <i class="fa-solid fa-comment-sms fa-lg" id="up-icon22"></i>
+    </button>
+
+    <!-- Modal 1 -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Contact Us (via EMail)</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form class="form1" action="https://formspree.io/f/mblrrnln" method="POST">
+              <div>
+                <span class="span1a">
+                  <label for="name">Name</label><br>
+                  <input class="input1" type="text" name="Name" placeholder="Full Name" required>
+                </span>
+                <span class="span1a">
+                  <label for="email">Email</label><br>
+                  <input class="input1" type="email" name="Email" placeholder="Email" required>
+                </span>
+              </div>
+              <div>
+                <span>
+                  <label for="region">Region</label><br>
+                  <select name="Region" required>
+                    <option value="" selected disabled>Select Your Region</option>
+                    <option>Ashanti</option>
+                    <option>Oti</option>
+                    <option>Greater Accra</option>
+                    <option>Bono</option>
+                    <option>Savannah</option>
+                    <option>Eastern</option>
+                    <option>Western</option>
+                    <option>Bono East</option>
+                    <option>Volta</option>
+                    <option>Upper East</option>
+                    <option>Central</option>
+                    <option>Upper West</option>
+                    <option>Ahafo</option>
+                    <option>Western North</option>
+                    <option>North East</option>
+                    <option>Northern</option>  
+                  </select>
+                </span>
+                <span class="span1a">
+                  <label for="phone">Phone Number</label><br>
+                  <input class="input1" type="phone" name="Phone" placeholder="Number" required>
+                </span>
+              </div>
+              <label for="Message">Your message</label>
+              <textarea name="Message" placeholder="Message" required></textarea>
+              <button class="button1aa" type="submit">Send</button>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 2 -->
+    <div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel2">Contact Us (via WhatsApp)</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+           <form class="form1" action="javascript:void(0);">
+            <div>
+              <span class="span1a">
+                <label for="name">Name</label><br>
+                <input class="input1" id="name1a" type="text" name="Name" placeholder="Full Name" required>
+              </span>
+              <span class="span1a">
+                <label for="email">Email</label><br>
+                <input class="input1" id="email1a" type="email" name="Email" placeholder="Email" required>
+              </span>
+            </div>
+            <div>
+                <span>
+                  <label for="region">Region</label><br>
+                  <select name="Region" required>
+                    <option value="" selected disabled>Select Your Region</option>
+                    <option>Ashanti</option>
+                    <option>Oti</option>
+                    <option>Greater Accra</option>
+                    <option>Bono</option>
+                    <option>Savannah</option>
+                    <option>Eastern</option>
+                    <option>Western</option>
+                    <option>Bono East</option>
+                    <option>Volta</option>
+                    <option>Upper East</option>
+                    <option>Central</option>
+                    <option>Upper West</option>
+                    <option>Ahafo</option>
+                    <option>Western North</option>
+                    <option>North East</option>
+                    <option>Northern</option>  
+                  </select>
+                </span>
+                <span class="span1a">
+                  <label for="phone">Phone Number</label><br>
+                  <input class="input1" type="phone" name="Phone" placeholder="Number" required>
+                </span>
+              </div>
+            <label for="Message">Your message</label>
+            <textarea id="message1a" name="Message" placeholder="Message" required></textarea>
+            <button type="button" class="button1aa" onclick="sendToWhatsapp()">Send</button>
+          </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 3 -->
+    <div class="modal fade" id="exampleModal3" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel3" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel3">Contact Us (via SMS)</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+           <form class="form1" action="https://formspree.io/f/xovaqrkg" method="POST">
+              <div>
+                <span class="span1a">
+                  <label for="name">Name</label><br>
+                  <input class="input1" type="text" name="Name" placeholder="Full Name" required>
+                </span>
+                <span class="span1a">
+                  <label for="email">Email</label><br>
+                  <input class="input1" type="email" name="Email" placeholder="Email" required>
+                </span>
+              </div>
+              <div>
+                <span>
+                  <label for="region">Region</label><br>
+                  <select name="Region" required>
+                    <option value="" selected disabled>Select Your Region</option>
+                    <option>Ashanti</option>
+                    <option>Oti</option>
+                    <option>Greater Accra</option>
+                    <option>Bono</option>
+                    <option>Savannah</option>
+                    <option>Eastern</option>
+                    <option>Western</option>
+                    <option>Bono East</option>
+                    <option>Volta</option>
+                    <option>Upper East</option>
+                    <option>Central</option>
+                    <option>Upper West</option>
+                    <option>Ahafo</option>
+                    <option>Western North</option>
+                    <option>North East</option>
+                    <option>Northern</option>  
+                  </select>
+                </span>
+                <span class="span1a">
+                  <label for="phone">Phone Number</label><br>
+                  <input class="input1" type="phone" name="Phone" placeholder="Number" required>
+                </span>
+              </div>
+              <label for="Message">Your message</label>
+              <textarea name="Message" placeholder="Message" required></textarea>
+              <button class="button1aa" type="submit">Send</button>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- <py-script>
+      from js import console
+
+      def sms_inputFunction(*args, **kwargs):
+
+        name = Element('name1ab').element.value
+        email = Element('email1ab').element.value
+        select = Element('select1ab').element.value
+        message = Element('message1ab').element.value
+      
+    </py-script> -->
+    {% block extrahead %}
+    <script type='text/javascript' src="{% static 'scriptss/my_routing.js' %}"></script>
+    {% endblock %}
+    <script type="text/javascript" src="{% static 'scriptss/whatsapp.js' %}"></script>
+    <img id="dynamicImage" src="" alt="Dynamic Image" data-image-url="{% static 'images2/crescent3.png' %}">
+  </body>
+</html>

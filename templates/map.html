@@ -2,12 +2,18 @@
 
 {% block content %}
 
-<div class="container-fluid pt-3 btn-secondary">
+<div class="container-fluid pt-3" style="background-color: #e9ecef;">
     <div class="row">
         <div class="col-md-3" id="chart-container">
-            <select class="btn-dark" id="bt1">
-                <option disabled selected>PARLIAMENT TOTAL VOTES</option>
-                <option id='parliamentTotal' disabled>{{tSum | safe}} : VALID VOTES</option>
+            <select class="bt2 btn-dark" id="electoralSelection1">
+                <option selected value="">Electoral Points</option>
+                <option value="reg_voters">Registered Voters</option>
+                <option value="votes_casted">Votes Casted</option>
+                <option value="valid_votes">Valid Votes</option>
+                <option value="rejected_votes">Rejected Votes</option>
+                <!-- {% for gH1 in dfGroupH3 %}
+                <option >{{gH1}}</option>
+                {% endfor %} -->
             </select>
             <div id="container1"></div>
             <div id="watermark-container">
@@ -16,17 +22,21 @@
 
         </div>
         <div class="col-md-3" id="chart-container">
-            <select id='censusSelection' method="post" onchange="changeChart_DistrictCensus()" type="submit" class=btn-dark name='regionNames' action='selectCensus'>
-                        <option id='censusOption' selected value="">POPULATION DEMOGRAPHICS</option>
-                        {% for gH in dfGroupH %}
-                        <option >{{gH}}</option>
-                        {% endfor %}
+          <h5>Only 2020 Flash Data-Voilence Incidents</h5>
+          <div id="map-container2">
+            <div class="wrapper">
+              <!--<div class="folium-map" id="map_name_1"></div>-->
+              <div id="map2" style="border-radius: 15px;"></div>
 
-            </select>
-            <div id="container4"></div>
-            <div id="watermark-container">
-                <p class="watermark">Geography @ KNUST</p>
+              
+              <button id="reset-map2" onclick="resetMap2()" style="position: absolute; top: 158px; left: 12px; z-index: 1000; font-size: large;"><i class="fa-solid fa-rotate-right fa-sm"></i><span class="hover-text3_reset">Reset</span></button> 
+            
+              <div id="watermark-container" style="position: absolute; top: 350px; left: 120px; z-index: 1000;">
+                <p class="watermark" style="opacity: 1; color: #d68d33;">Geography @ KNUST</p>
+              </div>
             </div>
+            
+          </div>
 
         </div>
         <div class="col-md-3" id="chart-container">
@@ -40,7 +50,7 @@
                     
                   </div>
                   <div class="buta">
-                      <div class="modal-body">
+                      <div class="modal-body" id="mody">
                         <div class="fontain">
                             <div class="box">   
     
@@ -67,28 +77,227 @@
                 </div> <!--gunicorn geospatialproject.wsgi-->
               </div>
             </div>
-             <a id="canter" style="color: white; text-decoration: none;" href="#">PageViews :
+             <a id="canter" style="color: #0096c7; text-decoration: none;" href="#">PageViews :
                 <img id="canta" src="https://hitwebcounter.com/counter/counter.php?page=10271174&style=0030&nbdigits=9&type=page&initCount=0" title="Page Views" Alt="Visit counter For Websites"   border="0" /></a> 
             <div id="map-container">
                 <div class="wrapper">
                     <!--<div class="folium-map" id="map_name_1"></div>-->
-                    <div id="map"></div>
+                    <div id="map" style="border-radius: 15px;"></div>
 
-                    <div style="position: absolute; top: 150px; left: 10px; z-index: 1000;">
-                    <button onclick="resetMap()" style="border-style: solid; border-radius: 4px; background-color: #6e7785; color: #d68d33; font-weight: bold;">Reset Map</button> 
-                    </div>
+                    
+                    <button id="reset-map2" onclick="resetMap()" style="position: absolute; top: 158px; left: 12px; z-index: 1000; font-size: large;"><i class="fa-solid fa-rotate-right fa-sm"></i><span class="hover-text3_reset">Reset</span></button> 
+                    
+                    <a href="{% url 'my_routing' %}"><button id="ps_routing" style="position: absolute; top: 200px; left: 12px; z-index: 1000; font-size: large;"><i class="fa-solid fa-diamond-turn-right fa-sm"></i><span class="hover-text_ps">PS Route</span></button></a>
                     <div id="watermark-container" style="position: absolute; top: 350px; left: 120px; z-index: 1000;">
-                        <p class="watermark" style="opacity: 1; color: #d68d33;">Geography @ KNUST</p>
+                        <p class="watermark" style="opacity: 1; color: #d68d33;">Geography @ KNUST</p><p class="watermark" style="opacity: 1; color: #d68d33; font-size: small;">Only 2020 Constituency Map Available</p>
                     </div>
+                    <button type="button" class="btn btn-danger" id="but11"  style="position: absolute; z-index: 1000; font-size: xx-small; top: 312px; left: 12px; " data-bs-toggle="modal" data-bs-target="#exampleModal4">
+                      <i class="fa-solid fa-envelope fa-lg" id="up-icon22"></i>
+                    </button>
+
+                    <button type="button" class="btn btn-success" id="but22" style="position: absolute; z-index: 1000; font-size: xx-small; top: 312px; left: 52px; " data-bs-toggle="modal" data-bs-target="#exampleModal2">
+                      <i class="fa-brands fa-whatsapp fa-lg" id="up-icon22"></i>
+                    </button>
+
+                    <button type="button" class="btn btn-primary" id="but33" style="position: absolute; z-index: 1000; font-size: xx-small; top: 312px; left: 92px; " data-bs-toggle="modal" data-bs-target="#exampleModal3">
+                      <i class="fa-solid fa-comment-sms fa-lg" id="up-icon22"></i>
+                    </button>
+
+                    <!-- Modal 1 -->
+                    <div class="modal fade" id="exampleModal4" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel4" aria-hidden="true">
+                      <div class="modal-dialog" style="left: 10px; top: 131px;" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel4" style="color: black; font-weight: bold;">Contact Us (via EMail)</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <form class="form1" action="https://formspree.io/f/mblrrnln" method="POST">
+                              <div>
+                                <span class="span1a">
+                                  <label for="name">Name</label><br>
+                                  <input class="input1" type="text" name="Name" placeholder="Full Name" required>
+                                </span>
+                                <span class="span1a">
+                                  <label for="email">Email</label><br>
+                                  <input class="input1" type="email" name="Email" placeholder="Email" required>
+                                </span>
+                              </div>
+                              <div>
+                                <span>
+                                  <label for="region">Region</label><br>
+                                  <select name="Region" required>
+                                    <option value="" selected disabled>Select Your Region</option>
+                                    <option>Ashanti</option>
+                                    <option>Oti</option>
+                                    <option>Greater Accra</option>
+                                    <option>Bono</option>
+                                    <option>Savannah</option>
+                                    <option>Eastern</option>
+                                    <option>Western</option>
+                                    <option>Bono East</option>
+                                    <option>Volta</option>
+                                    <option>Upper East</option>
+                                    <option>Central</option>
+                                    <option>Upper West</option>
+                                    <option>Ahafo</option>
+                                    <option>Western North</option>
+                                    <option>North East</option>
+                                    <option>Northern</option>  
+                                  </select>
+                                </span>
+                                <span class="span1a">
+                                  <label for="phone">Phone Number</label><br>
+                                  <input class="input1" type="phone" name="Phone" placeholder="Number" required>
+                                </span>
+                              </div>
+                              <label for="Message">Your message</label>
+                              <textarea name="Message" placeholder="Message" required></textarea>
+                              <button class="button1aa" type="submit">Send</button>
+                            </form>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Modal 2 -->
+                    <div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+                      <div class="modal-dialog" style="left: 10px; top: 131px;" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel2" style="color: black; font-weight: bold;">Contact Us (via WhatsApp)</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                           <form class="form1" action="javascript:void(0);">
+                            <div>
+                              <span class="span1a">
+                                <label for="name">Name</label><br>
+                                <input class="input1" id="name1a" type="text" name="Name" placeholder="Full Name" required>
+                              </span>
+                              <span class="span1a">
+                                <label for="email">Email</label><br>
+                                <input class="input1" id="email1a" type="email" name="Email" placeholder="Email" required>
+                              </span>
+                            </div>
+                            <div>
+                                <span>
+                                  <label for="region">Region</label><br>
+                                  <select name="Region" required>
+                                    <option value="" selected disabled>Select Your Region</option>
+                                    <option>Ashanti</option>
+                                    <option>Oti</option>
+                                    <option>Greater Accra</option>
+                                    <option>Bono</option>
+                                    <option>Savannah</option>
+                                    <option>Eastern</option>
+                                    <option>Western</option>
+                                    <option>Bono East</option>
+                                    <option>Volta</option>
+                                    <option>Upper East</option>
+                                    <option>Central</option>
+                                    <option>Upper West</option>
+                                    <option>Ahafo</option>
+                                    <option>Western North</option>
+                                    <option>North East</option>
+                                    <option>Northern</option>  
+                                  </select>
+                                </span>
+                                <span class="span1a">
+                                  <label for="phone">Phone Number</label><br>
+                                  <input class="input1" type="phone" name="Phone" placeholder="Number" required>
+                                </span>
+                              </div>
+                            <label for="Message">Your message</label>
+                            <textarea id="message1a" name="Message" placeholder="Message" required></textarea>
+                            <button type="button" class="button1aa" onclick="sendToWhatsapp()">Send</button>
+                          </form>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Modal 3 -->
+                    <div class="modal fade" id="exampleModal3" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel3" aria-hidden="true">
+                      <div class="modal-dialog" style="left: 10px; top: 131px;" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel3" style="color: black; font-weight: bold;">Contact Us (via SMS)</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                           <form class="form1" action="https://formspree.io/f/xovaqrkg" method="POST">
+                              <div>
+                                <span class="span1a">
+                                  <label for="name">Name</label><br>
+                                  <input class="input1" type="text" name="Name" placeholder="Full Name" required>
+                                </span>
+                                <span class="span1a">
+                                  <label for="email">Email</label><br>
+                                  <input class="input1" type="email" name="Email" placeholder="Email" required>
+                                </span>
+                              </div>
+                              <div>
+                                <span>
+                                  <label for="region">Region</label><br>
+                                  <select name="Region" required>
+                                    <option value="" selected disabled>Select Your Region</option>
+                                    <option>Ashanti</option>
+                                    <option>Oti</option>
+                                    <option>Greater Accra</option>
+                                    <option>Bono</option>
+                                    <option>Savannah</option>
+                                    <option>Eastern</option>
+                                    <option>Western</option>
+                                    <option>Bono East</option>
+                                    <option>Volta</option>
+                                    <option>Upper East</option>
+                                    <option>Central</option>
+                                    <option>Upper West</option>
+                                    <option>Ahafo</option>
+                                    <option>Western North</option>
+                                    <option>North East</option>
+                                    <option>Northern</option>  
+                                  </select>
+                                </span>
+                                <span class="span1a">
+                                  <label for="phone">Phone Number</label><br>
+                                  <input class="input1" type="phone" name="Phone" placeholder="Number" required>
+                                </span>
+                              </div>
+                              <label for="Message">Your message</label>
+                              <textarea name="Message" placeholder="Message" required></textarea>
+                              <button class="button1aa" type="submit">Send</button>
+                            </form>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                 </div>
             </div>
                                   
         </div>
 
         <div class="col-md-3" id="chart-container">
-           <select class="btn-dark" id="bt2">
-                <option disabled selected>PRESIDENTIAL TOTAL VOTES</option>
-                <option id='presidentialTotal' disabled>{{tSum2 | safe}} : VALID VOTES</option>
+           <select class="bt1 btn-dark" id="electoralSelection2">
+                <option selected value="">Electoral Points</option>
+                <option value="reg_voters">Registered Voters</option>
+                <option value="votes_casted">Votes Casted</option>
+                <option value="valid_votes">Valid Votes</option>
+                <option value="rejected_votes">Rejected Votes</option>
+               <!--  {% for gH2 in dfGroupH3 %}
+                <option >{{gH2}}</option>
+                {% endfor %} -->
             </select>
             <div id="container1b"></div>
             <div id="watermark-container">
@@ -97,28 +306,60 @@
 
         </div>
 
-        <div class="col-md-3" id="chart-container">
+        <div class="col-md-3" id="chart-container" style="margin-top: 10px">
+            <select class="bt2 btn-dark" id="electoralSelection3">
+                <option selected value="">Presidential Total Vote</option>
+                <option id='presidentialTotal' disabled>{{tSum2 | safe}} : VALID TOTAL VOTES</option>
+                <!-- {% for gH4 in dfGroupH4 %}
+                <option >{{gH4}}</option>
+                {% endfor %} -->
+            </select>
             <div id="container2"></div>
             <div id="watermark-container">
                 <p class="watermark">Geography @ KNUST</p>
             </div>
 
         </div>
-        <div class="col-md-3" id="chart-container">
+        <div class="col-md-3" id="chart-container" style="margin-top: 10px">
+            <select id='censusSelection' class=btn-dark>
+                        <option id='censusOption' selected value="">POPULATION DEMOGRAPHICS</option>
+                        {% for gH in dfGroupH %}
+                        <option >{{gH}}</option>
+                        {% endfor %}
+
+            </select>
             <div id="container3"></div>
             <div id="watermark-container">
                 <p class="watermark">Geography @ KNUST</p>
             </div>   
 
         </div>
-        <div class="col-md-3" id="chart-container">
+        <div class="col-md-3" id="chart-container" style="margin-top: 10px">
+            <select class="bt1 btn-dark" id="electoralSelection5">
+                <option selected value="">Electoral Points Inactive</option>
+                <option value="reg_voters">Registered Voters</option>
+                <option value="votes_casted">Votes Casted</option>
+                <option value="valid_votes">Valid Votes</option>
+                <option value="rejected_votes">Rejected Votes</option>
+                <!-- {% for gH5 in dfGroupH5 %}
+                <option >{{gH5}}</option>
+                {% endfor %} -->
+
+            </select>
             <div id="container3b"></div>
             <div id="watermark-container">
                 <p class="watermark">Geography @ KNUST</p>
             </div>   
 
         </div>
-        <div class="col-md-3" id="chart-container">
+        <div class="col-md-3" id="chart-container" style="margin-top: 10px">
+            <select class="bt1 btn-dark" id="electoralSelection4">
+                <option selected value="">Parliament Total Vote</option>
+                <option id='parliamentTotal' disabled>{{tSum | safe}} : VALID TOTAL VOTES</option>
+                <!-- {% for gH5 in dfGroupH5 %}
+                <option >{{gH5}}</option>
+                {% endfor %} -->
+            </select>
             <div id="container2b"></div>
             <div id="watermark-container">
                 <p class="watermark">Geography @ KNUST</p>
@@ -138,4 +379,8 @@
 <div id='presidentialConst16' style = 'display:none;'>{{merged2_GHMap2Const | safe}}</div>
 <div id='parliamentConst16CONST2' style = 'display:none;'>{{merged_GHMap2ConstCONST2 | safe}}</div>
 <div id='presidentialConst16CONST2' style = 'display:none;'>{{merged2_GHMap2ConstCONST2 | safe}}</div>
+<div id='flashReg' style = 'display:none;'>{{mergedFlashREG_GHMap2 | safe}}</div>
+<div id='flashConst' style = 'display:none;'>{{mergedFlashCONST_GHMap2 | safe}}</div>
+<div id='flashConstNew' style = 'display:none;'>{{mergedFlashCONST_GHMap2New | safe}}</div>
+<div id='polling_stations' style = 'display:none;'>{{mergedFlashPS_GHMap2 | safe}}</div>
 {% endblock %}
