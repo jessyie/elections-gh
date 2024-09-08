@@ -1,6 +1,6 @@
 django-compressor
 python-dotenv
-SQLAlchemy
+SQLAlchemy==1.4.46
 affine==2.4.0
 asgiref==3.7.2
 astroid
@@ -28,7 +28,7 @@ MarkupSafe
 matplotlib
 numpy
 packaging
-pandas==2.2.2
+pandas
 Pillow
 pip
 psycopg2
