@@ -28,7 +28,7 @@ MarkupSafe
 matplotlib
 numpy
 packaging
-pandas
+pandas==2.2.2
 Pillow
 pip
 psycopg2
