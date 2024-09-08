@@ -1,3 +1,4 @@
+django-redis
 django-compressor
 python-dotenv
 SQLAlchemy==1.4.46
