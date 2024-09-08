@@ -86,17 +86,17 @@ WSGI_APPLICATION = 'geospatialproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    # 'default': {
-    #     'ENGINE':'django.db.backends.postgresql_psycopg2',
-    #     'NAME': E_DATABASE,
-    #     'USER':'postgres',
-    #     'PASSWORD':'1234',
-    #     'HOST':'localhost'
+# DATABASES = {
+#     # 'default': {
+#     #     'ENGINE':'django.db.backends.postgresql_psycopg2',
+#     #     'NAME': E_DATABASE,
+#     #     'USER':'postgres',
+#     #     'PASSWORD':'1234',
+#     #     'HOST':'localhost'
         
-    #     }
+#     #     }
     
-}
+# }
 
 
 # Password validation
