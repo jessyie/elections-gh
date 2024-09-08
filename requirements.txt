@@ -1,7 +1,7 @@
-Django==5.1.1
-fiona==1.9.5
-geopandas==0.14.1
-pandas==2.2.2
-python-decouple==3.8
-python-dotenv==1.0.1
-SQLAlchemy==2.0.29
+Django
+fiona
+geopandas
+pandas
+python-decouple
+python-dotenv
+SQLAlchemy
