@@ -127,9 +127,9 @@ engine = create_engine(f'postgresql+psycopg2://{db_user}:{db_password}@{db_host}
 queryPop = """
     SELECT "2020districts"."DistCode", "2020districts"."DistName", "2020districts"."RegCode", "2020regions"."RegName", "2020constituencies"."ConstName", "2020data_dist".*
         FROM public."2020data_dist"
-        Join "2020districts" on "2020data_dist"."ConstCode"="2020districts"."ConstCode"
-        Join "2020regions" on "2020districts"."RegCode"="2020regions"."RegCode"
-        Join "2020constituencies" on "2020districts"."ConstCode"="2020constituencies"."ConstCode";
+        Join public."2020districts" on "2020data_dist"."ConstCode"="2020districts"."ConstCode"
+        Join public."2020regions" on "2020districts"."RegCode"="2020regions"."RegCode"
+        Join public."2020constituencies" on "2020districts"."ConstCode"="2020constituencies"."ConstCode";
 
 """
 
@@ -190,7 +190,7 @@ df3 = pd.read_sql(queryPop, engine)
 
 queryREGdf2020 = """
     SELECT "2020regions"."RegName","2020flash_reg".* FROM public."2020flash_reg"
-    Join "2020regions" on "2020flash_reg"."RegCode"="2020regions"."RegCode";
+    Join public."2020regions" on "2020flash_reg"."RegCode"="2020regions"."RegCode";
 
 """
 
@@ -201,8 +201,8 @@ flash_REGdf2020 = pd.read_sql(queryREGdf2020, engine)
 queryCONSTdf2020 = """
     SELECT "2020regions"."RegName","2020regions"."RegCode","2020constituencies"."ConstName", "2020flash_const".* FROM 
     public."2020flash_const"
-    Join "2020constituencies" on "2020flash_const"."ConstCode"="2020constituencies"."ConstCode"
-    Join "2020regions" on "2020constituencies"."RegCode"="2020regions"."RegCode";
+    Join public."2020constituencies" on "2020flash_const"."ConstCode"="2020constituencies"."ConstCode"
+    Join public."2020regions" on "2020constituencies"."RegCode"="2020regions"."RegCode";
 
 
 """
@@ -274,8 +274,8 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     query1 = """
     SELECT "{year}constituencies"."ConstName", "{year}regions"."RegName", "{year}data_const".*
         FROM public."{year}data_const"
-        Join "{year}constituencies" on "{year}data_const"."ConstCode"="{year}constituencies"."ConstCode"
-        Join "{year}regions" on "{year}constituencies"."RegCode"="{year}regions"."RegCode";
+        Join public."{year}constituencies" on "{year}data_const"."ConstCode"="{year}constituencies"."ConstCode"
+        Join public."{year}regions" on "{year}constituencies"."RegCode"="{year}regions"."RegCode";
 
         """
     
@@ -288,7 +288,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     query2 = """
     SELECT "{year}constituencies"."ConstName", "{year}constituencies"."RegName", "{year}data_const".*
         FROM public."{year}data_const"
-        Join "{year}constituencies" on "{year}data_const"."ConstCode"="{year}constituencies"."ConstCode";
+        Join public."{year}constituencies" on "{year}data_const"."ConstCode"="{year}constituencies"."ConstCode";
 
         """
 
