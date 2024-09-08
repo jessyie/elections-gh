@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 from decouple import config
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -86,17 +87,24 @@ WSGI_APPLICATION = 'geospatialproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     # 'default': {
-#     #     'ENGINE':'django.db.backends.postgresql_psycopg2',
-#     #     'NAME': E_DATABASE,
-#     #     'USER':'postgres',
-#     #     'PASSWORD':'1234',
-#     #     'HOST':'localhost'
+load_dotenv()
+
+db_name = os.getenv('DB_NAME')
+db_user = os.getenv('DB_USER')
+db_password = os.getenv('DB_PASSWORD')
+db_host = os.getenv('DB_HOST')
+
+DATABASES = {
+    'default': {
+        'ENGINE':'django.db.backends.postgresql_psycopg2',
+        'NAME': db_name,
+        'USER':db_user,
+        'PASSWORD':db_password,
+        'HOST':db_host
         
-#     #     }
+        }
     
-# }
+}
 
 
 # Password validation
