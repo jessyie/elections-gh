@@ -784,6 +784,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     graph3AX_1B=df_cleanC2.ConstName
     df_grouped3zP2 = df_cleanC2.drop(columns=['rejected_votes','valid_votes'])
     df_grouped3zP2.fillna(0, inplace=True)
+    #print(df_grouped3zP2)
     df_grouped3zP2 = df_grouped3zP2.values.tolist()
     #print(df_grouped3_1B.CONSTITUENCY)
 
@@ -813,6 +814,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     df_cleanC2['Values_map'] = df_cleanC2['Winner'].map(value_mappingConstB)
 
     values_dictConstB = df_cleanC2.set_index("ConstCode")[["ConstName", "Values_map", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
+
 
 
 
@@ -881,6 +883,23 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     df_cleanC2020['Winner'] = graph4AYes_3_1ACONST2.idxmax(axis=1)
 
+    # Counting the number of constituencies won by each party
+    party_wins = df_cleanC2020['Winner'].value_counts()
+    #print(party_wins)
+    party_wins_dict = party_wins.to_dict()
+
+    const_won_by_party = [{"name": party, "y": count} for party, count in party_wins_dict.items()]
+    #print(const_won_by_party)
+
+    names = [item["name"] for item in const_won_by_party]
+
+    count_y = [item["y"] for item in const_won_by_party]
+
+    #print(names)
+    #print(count_y)
+
+    #const_won_by_party_data = json.dumps(const_won_by_party)
+
      # Find the name associated with the second highest value in each row
     df_cleanC2020['Second_Highest_Value_Name'] = graph4AYes_3_1ACONST2.apply(lambda row: row.drop(row.idxmax()).idxmax(), axis=1)
 
@@ -901,7 +920,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     values_dictConstACONST2 = df_cleanC2020.set_index("ConstCode")[["ConstName", "Values_map", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
     
     
-    # // (D) Ashanti(Presidential) Do Total sum operations for each party on each constituency based on each region for both necessary offices (F) Parliament
+    # // (D) Ashanti(Presidential) Do Total sum operations for each party on each constituency based on each region for both necessary offices (F) Presidential
     dfGroup1BCONST2 = dfGroup2.loc[:,electoral:first_C_column2]
     dfGroup1BCONST2 = dfGroup1BCONST2.drop(columns=first_C_column2)
     dfGroup1BCONST2 = dfGroup1BCONST2.loc[:,electoral:].replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
@@ -940,13 +959,18 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     graph4AYes_3_1BCONST2 = graph4AY_3_1BCONST2
 
 
+
+    #print(graph4AYes_3_1BCONST2)
+
+
     graph3AY_1BCONST2 = df_cleanC2020B.iloc[:,4:]
     graph3AX_1BCONST2=df_cleanC2020B.ConstName
     df_grouped3zP2CONST2 = df_cleanC2020B.drop(columns=['rejected_votes','valid_votes'])
     df_grouped3zP2CONST2.fillna(0, inplace=True)
+
     df_grouped3zP2CONST2 = df_grouped3zP2CONST2.values.tolist()
 
-     # Add a new 'values' column containing the highest value for each region
+     # Adding a new 'values' column containing the highest value for each region
     df_cleanC2020B['Values'] = graph4AYes_3_1BCONST2.apply(max, axis=1)
 
     # Find the second highest value in each row
@@ -954,6 +978,8 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     df_cleanC2020B['Winner'] = graph4AYes_3_1BCONST2.idxmax(axis=1)
 
+
+    #print(df_cleanC2020B)
      # Find the name associated with the second highest value in each row
     df_cleanC2020B['Second_Highest_Value_Name'] = graph4AYes_3_1BCONST2.apply(lambda row: row.drop(row.idxmax()).idxmax(), axis=1)
 
@@ -972,7 +998,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     df_cleanC2020B['Values_map'] = df_cleanC2020B['Winner'].map(value_mappingConstBCONST2)
 
     values_dictConstBCONST2 = df_cleanC2020B.set_index("ConstCode")[["ConstName", "Values_map", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
-
+    #print(values_dictConstBCONST2)
 
     #global dfGroupH2
 
@@ -1150,6 +1176,24 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     mergedFlashPS_GHMap2 = mergedFlashPS_GHMap2_json.to_json()
 
+
+    #////////////////////////////////////////////
+
+
+    # df_winning = graph4AYes_3_1BCONST2
+
+    # # For each row (constituency), finding the party with the highest value
+    # df_winning['WinningParty'] = df_winning.idxmax(axis=1)
+
+    # # Counting the number of constituencies won by each party
+    # party_wins = df_winning['WinningParty'].value_counts()
+    # print(party_wins)
+
+
+
+
+
+
      #________________________________
 
     #// POPULATION DATA PROCESSING//
@@ -1239,7 +1283,10 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     'mergedFlashREG_GHMap2': mergedFlashREG_GHMap2,
     'mergedFlashCONST_GHMap2' : mergedFlashCONST_GHMap2,
     'mergedFlashCONST_GHMap2New' : mergedFlashCONST_GHMap2New,
-    'mergedFlashPS_GHMap2': mergedFlashPS_GHMap2
+    'mergedFlashPS_GHMap2': mergedFlashPS_GHMap2,
+    #'const_won_by_party_data' : const_won_by_party_data,
+    'names' : names,
+    'count_y' : count_y
     
     }
 

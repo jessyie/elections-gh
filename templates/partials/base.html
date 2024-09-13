@@ -68,10 +68,10 @@
       <a class="navbar-brand item1" id="nano_1" href="#">PRESIDENTIAL</a>
 
       <select id='regionSelection' class=btn-secondary>
-
-        <option id='regionOption' selected value="">Regions</option>
+        <option value="National">National</option>
+        <option value="Regions">Regions</option>
         {% for ga in graph1BX %}
-        <option >{{ga}}</option>
+        <option value="{{ ga }}">{{ga}}</option>
         {% endfor %}
         
       </select>
@@ -342,18 +342,72 @@ window.onload = function() {
 
   })(Highcharts);
 
-
+    //const data_const_won = {{ const_won_by_party_data|safe }};
 
     var chart1b = Highcharts.chart('container1b', {
       chart: {
         type: 'bar',
         style: {
           fontSize: '15px',
-          
+        },
+        events: {
+          load: function () {
+            var chart = this;
+
+            // Function to update chart points
+            function updateChartData() {
+              var points = chart.series[0].points;
+              var newPoints = [];
+
+              // Reset the `newPoints` array with the new data
+              points.forEach((point, i) => {
+                point.update({
+                  name: {{ names | safe }}[i]
+                }, false);
+
+                newPoints.push({
+                  x: point.x,
+                  y: point.y,
+                  name: point.name
+                });
+              });
+
+              chart.redraw();
+
+              // Sorting functionality
+              $('#sort4').on('click', function () {
+                // Sort newPoints based on the current dataset (not the old data)
+                newPoints.sort(function (a, b) {
+                  return b.y - a.y;
+                });
+
+                // Re-index the points after sorting
+                newPoints.forEach((el, i) => {
+                  el.x = i;
+                });
+
+                // Update the chart with sorted data
+                chart.series[0].setData(newPoints, true, false, false);
+              });
+            }
+
+            // Call this function whenever you filter/load new data
+            updateChartData();
+
+            // Example of loading a new dataset (you'll have your own logic for this)
+            $('#loadNewData').on('click', function () {
+              // Assuming you load new data here
+              // Reset `newPoints` before loading new data
+              chart.series[0].setData(newData, true, false, false);
+
+              // Update chart with the new dataset
+              updateChartData();
+            });
+          }
         }
       },
       title: {
-        text: 'Total Valid Votes Per Region (Parliament)',
+        text: 'Total Seat Won Per Political Party (Parliament)',
         align: 'left',
         style: {
           fontSize: '13px'
@@ -361,9 +415,11 @@ window.onload = function() {
       },
 
       xAxis: {
-        categories: {{ graph1AX | safe}},
+        type: 'category',
+        min: 0,
+        max: 5,
         scrollbar: {
-          enabled: false
+          enabled: true
         },
         title: {
           text: 'Regions'
@@ -466,7 +522,7 @@ window.onload = function() {
       },
       series: [{
         name: 'Data',
-        data: {{ graph1AY | safe}}
+        data: {{ count_y | safe}}
       }]
     });
 
@@ -475,12 +531,43 @@ window.onload = function() {
       chart: {
         type: 'bar',
         style: {
-          fontSize: '15px',
-          
+          fontSize: '15px', 
+        },
+        events: {
+        load: function() {
+          var points = this.series[0].points,
+            chart = this,
+            newPoints = [];
+
+          points.forEach((point, i) => {
+            point.update({
+              name: {{ graph2BX | safe}}[i]
+            }, false);
+            newPoints.push({
+              x: point.x,
+              y: point.y,
+              name: point.name
+            });
+          });
+          chart.redraw();
+
+          // Sorting max - min
+          $('#sort3').on('click', function() {
+            newPoints.sort(function(a, b) {
+              return b.y - a.y
+            });
+
+            newPoints.forEach((el, i) => {
+              el.x = i;
+            });
+
+            chart.series[0].setData(newPoints, true, false, false);
+            });
+          }
         }
       },
       title: {
-        text: 'Total Valid Votes Per Region (Presidential)',
+        text: 'Total Valid Votes Per Political Party (Presidential)',
         align: 'left',
         style: {
           fontSize: '13px'
@@ -488,9 +575,11 @@ window.onload = function() {
       },
 
       xAxis: {
-        categories: {{ graph1BX | safe}},
+        type: 'category',
+        min: 0,
+        max: 5,
         scrollbar: {
-          enabled: false
+          enabled: true
         },
         title: {
           text: 'Regions'
@@ -593,7 +682,7 @@ window.onload = function() {
       },
       series: [{
         name: 'Data',
-        data: {{ graph1BY | safe}},
+        data: {{ graph2BY | safe}},
         color: '#f0a754'
       }]
     });
@@ -1103,8 +1192,39 @@ window.onload = function() {
       chart: {
         type: 'bar',
         style: {
-          fontSize: '15px',
-          
+          fontSize: '15px', 
+        },
+        events: {
+        load: function() {
+          var points = this.series[0].points,
+            chart = this,
+            newPoints = [];
+
+          points.forEach((point, i) => {
+            point.update({
+              name: {{ graph1AX2P | safe}}[i]
+            }, false);
+            newPoints.push({
+              x: point.x,
+              y: point.y,
+              name: point.name
+            });
+          });
+          chart.redraw();
+
+          // Sorting max - min
+          $('#sort5').on('click', function() {
+            newPoints.sort(function(a, b) {
+              return b.y - a.y
+            });
+
+            newPoints.forEach((el, i) => {
+              el.x = i;
+            });
+
+            chart.series[0].setData(newPoints, true, false, false);
+            });
+          }
         }
       },
       title: {
@@ -1120,7 +1240,7 @@ window.onload = function() {
     },
 
       xAxis: {
-        categories: {{ graph1AX2P | safe}},
+        type: 'category',
         scrollbar: {
           enabled: false
         },
