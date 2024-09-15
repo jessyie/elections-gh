@@ -430,6 +430,10 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     dfRegions[electoral] = dfRegions[electoral].replace(',','', regex=True)
     dfRegions[electoral] = dfRegions[electoral].astype('int')
     dfRegionsSum = dfRegions.groupby(by=["RegName"])[electoral].sum().reset_index()
+
+    # Sorting in descending order
+    dfRegionsSum = dfRegionsSum.sort_values(by=electoral, ascending=False)
+    #print(dfRegionsSum)
     graph1AX = dfRegionsSum['RegName'].values.tolist()
     graph1AY = dfRegionsSum[electoral]
     #print(dfRegionsSum)
@@ -440,6 +444,9 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     dfRegions2[electoral] = dfRegions2[electoral].replace(',','', regex=True)
     dfRegions2[electoral] = dfRegions2[electoral].astype('int')
     dfRegionsSum2 = dfRegions2.groupby(by=["RegName"])[electoral].sum().reset_index()
+
+    dfRegionsSum2 = dfRegionsSum2.sort_values(by=electoral, ascending=False)
+
     graph1BX = dfRegionsSum2['RegName']
     graph1BY = dfRegionsSum2[electoral]
     #print(dfRegionsSum2)
@@ -461,6 +468,9 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     dfGroupD = dfGroupD.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
     dfGroupD = dfGroupD.apply(pd.to_numeric) # Converting all the string in the columns to integers
     tSumD = dfGroupD.sum().reset_index() # Sum operation on a specific column
+    tSumDParties = tSumD.sort_values(by=0, ascending=False)
+    graph2BXParties = tSumDParties['index']
+    graph2BYParties = tSumDParties[0]
     graph2BX = tSumD['index']
     graph2BY = tSumD[0]
     #print(graph2BX)
@@ -625,6 +635,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     dfConst = dfGroupNew1[["ConstName", electoral]].copy()
     dfConst[electoral] = dfConst[electoral].replace(',','', regex=True)
     dfConst[electoral] = dfConst[electoral].astype('int')
+    dfConst = dfConst.sort_values(by=electoral, ascending=False)
     graphSub1AX = dfConst['ConstName'].values.tolist()
     graphSub1AY = dfConst[electoral].values.tolist()
     #print(graphSub1AY)
@@ -634,6 +645,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     dfConst1B = dfGroupNew1B[["ConstName", electoral]].copy()
     dfConst1B[electoral] = dfConst1B[electoral].replace(',','', regex=True)
     dfConst1B[electoral] = dfConst1B[electoral].astype('int')
+    dfConst1B = dfConst1B.sort_values(by=electoral, ascending=False)
     graphSub1BX = dfConst1B['ConstName'].values.tolist()
     graphSub1BY = dfConst1B[electoral].values.tolist()
     # print(graphSub1AY)
@@ -895,6 +907,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     count_y = [item["y"] for item in const_won_by_party]
 
+
     #print(names)
     #print(count_y)
 
@@ -1024,7 +1037,9 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     graph2AX = tSumC['index'].values.astype(str).tolist()
     graph2AY = tSumC[0].values.astype(int).tolist()
     graph2AXP = tSumCP['index'].values.astype(str).tolist()
-    graph2AYP = tSumCP[0].values.astype(int).tolist()  
+    graph2AYP = tSumCP[0].values.astype(int).tolist()
+    graph2BXParties = tSumDParties['index'].values.astype(str).tolist()
+    graph2BYParties = tSumDParties[0].values.astype(int).tolist()  
     graph2BX = tSumD['index'].values.astype(str).tolist()
     graph2BY = tSumD[0].values.astype(int).tolist()
     graph2BXP = tSumDP['index'].values.astype(str).tolist()
@@ -1205,6 +1220,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     dfGroupA2P[census] = dfGroupA2P[census].astype('float') # Converting all the string in the columns to integers
     tSum2P = dfGroupA2P[census].values.sum() # Sum operation on a specific column
     dfContinentSum2P = dfGroupA2P.groupby(by=["RegName"])[census].sum().reset_index()
+    dfContinentSum2P = dfContinentSum2P.sort_values(by=census, ascending=False)
     graph1AX2P = dfContinentSum2P['RegName'].values.tolist()
     graph1AY2P = dfContinentSum2P[census]
 
@@ -1213,6 +1229,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     dfGroupB2P[census] = dfGroupB2P[census].astype('float') # Converting all the string in the columns to integers
     tSumB2P = dfGroupB2P[census].values.sum() # Sum operation on a specific column
     dfContinentSumB2P = dfGroupB2P.groupby(by=["ConstName"])[census].sum().reset_index()
+    dfContinentSumB2P = dfContinentSumB2P.sort_values(by=census, ascending=False)
     graph1BX2P = dfContinentSumB2P['ConstName'].values.tolist()
     graph1BY2P = dfContinentSumB2P[census]
 
@@ -1286,7 +1303,9 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     'mergedFlashPS_GHMap2': mergedFlashPS_GHMap2,
     #'const_won_by_party_data' : const_won_by_party_data,
     'names' : names,
-    'count_y' : count_y
+    'count_y' : count_y,
+    'graph2BXParties' : graph2BXParties,
+    'graph2BYParties' : graph2BYParties
     
     }
 
@@ -1420,6 +1439,7 @@ def selectCensus(request):
         dfGroupA2P[census] = dfGroupA2P[census].astype('float')
         tSum2P = dfGroupA2P[census].values.sum()
         dfContinentSum2P = dfGroupA2P.groupby(by=["RegName"])[census].sum().reset_index()
+        dfContinentSum2P = dfContinentSum2P.sort_values(by=census, ascending=False)
         graph1AX2P = dfContinentSum2P['RegName'].values.tolist()
         graph1AY2P = dfContinentSum2P[census].values.tolist()
 
@@ -1427,6 +1447,7 @@ def selectCensus(request):
         dfGroupB2P[census] = dfGroupB2P[census].astype('float')
         tSumB2P = dfGroupB2P[census].values.sum()
         dfContinentSumB2P = dfGroupB2P.groupby(by=["ConstName"])[census].sum().reset_index()
+        dfContinentSumB2P = dfContinentSumB2P.sort_values(by=census, ascending=False)
         graph1BX2P = dfContinentSumB2P['ConstName'].values.tolist()
         graph1BY2P = dfContinentSumB2P[census].values.tolist()
 
@@ -1511,6 +1532,7 @@ def selectElectoral1(request):
         dfConst = dfGroupNew1[["ConstName", electoral]].copy()
         dfConst[electoral] = dfConst[electoral].replace(',','', regex=True)
         dfConst[electoral] = dfConst[electoral].astype('int')
+        dfConst = dfConst.sort_values(by=electoral, ascending=False)
         graphSub1AX = dfConst['ConstName'].values.tolist()
         graphSub1AY = dfConst[electoral].values.astype(int).tolist()
 
@@ -1519,6 +1541,7 @@ def selectElectoral1(request):
         dfConst1B = dfGroupNew1B[["ConstName", electoral]].copy()
         dfConst1B[electoral] = dfConst1B[electoral].replace(',','', regex=True)
         dfConst1B[electoral] = dfConst1B[electoral].astype('int')
+        dfConst1B = dfConst1B.sort_values(by=electoral, ascending=False)
         graphSub1BX = dfConst1B['ConstName'].values.tolist()
         graphSub1BY = dfConst1B[electoral].values.astype(int).tolist()
 
