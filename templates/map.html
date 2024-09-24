@@ -2,14 +2,13 @@
 
 {% block content %}
 
-<div class="container-fluid pt-3" style="background-color: #e9ecef;">
+<div class="container-fluid pt-3" id="cfluid" style="background-color: #e9ecef;">
     <div class="row">
         <div class="col-md-3" id="chart-container">
             <select class="bt2 btn-dark" id="electoralSelection1">
-                <option selected value="">Electoral Points</option>
+                <option value="valid_votes">Valid Votes</option>
                 <option value="reg_voters">Registered Voters</option>
                 <option value="votes_casted">Votes Casted</option>
-                <option value="valid_votes">Valid Votes</option>
                 <option value="rejected_votes">Rejected Votes</option>
                 <!-- {% for gH1 in dfGroupH3 %}
                 <option >{{gH1}}</option>
@@ -21,25 +20,7 @@
             </div>
 
         </div>
-        <div class="col-md-3" id="chart-container">
-          <h5>Only 2020 Flash Data-Voilence Incidents</h5>
-          <div id="map-container2">
-            <div class="wrapper">
-              <!--<div class="folium-map" id="map_name_1"></div>-->
-              <div id="map2" style="border-radius: 15px;"></div>
-
-              
-              <button id="reset-map2" onclick="resetMap2()" style="position: absolute; top: 158px; left: 12px; z-index: 1000; font-size: large;"><i class="fa-solid fa-rotate-right fa-sm"></i><span class="hover-text3_reset">Reset</span></button> 
-            
-              <div id="watermark-container" style="position: absolute; top: 350px; left: 120px; z-index: 1000;">
-                <p class="watermark" style="opacity: 1; color: #d68d33;">Geography @ KNUST</p>
-              </div>
-            </div>
-            
-          </div>
-
-        </div>
-        <div class="col-md-3" id="chart-container">
+        <div class="col-md-3" id="chart-containerA">
             <!-- Modal -->
             <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog" role="document">
@@ -75,7 +56,7 @@
                         </div>
                     </div>
                   </div>
-                </div> <!--gunicorn geospatialproject.wsgi-->
+                </div> 
               </div>
             </div>
              <a id="canter" style="color: #0096c7; text-decoration: none;" href="#">PageViews :
@@ -89,18 +70,18 @@
                     <button id="reset-map2" onclick="resetMap()" style="position: absolute; top: 158px; left: 12px; z-index: 1000; font-size: large;"><i class="fa-solid fa-rotate-right fa-sm"></i><span class="hover-text3_reset">Reset</span></button> 
                     
                     <a href="{% url 'my_routing' %}"><button id="ps_routing" style="position: absolute; top: 200px; left: 12px; z-index: 1000; font-size: large;"><i class="fa-solid fa-diamond-turn-right fa-sm"></i><span class="hover-text_ps">PS Route</span></button></a>
-                    <div id="watermark-container" style="position: absolute; top: 350px; left: 120px; z-index: 1000;">
-                        <p class="watermark" style="opacity: 1; color: #d68d33;">Geography @ KNUST</p><p class="watermark" style="opacity: 1; color: #d68d33; font-size: small;">Only 2020 Constituency Map Available</p>
+                    <div id="watermark-container2">
+                        <p class="watermark">Geography @ KNUST</p><p class="watermark2">Only 2020 Constituency Map Available</p>
                     </div>
-                    <button type="button" class="btn btn-danger" id="but11"  style="position: absolute; z-index: 1000; font-size: xx-small; top: 312px; left: 12px; " data-bs-toggle="modal" data-bs-target="#exampleModal4">
+                    <button type="button" class="btn btn-danger" id="but11"  style="position: absolute; z-index: 1000; font-size: xx-small; top: 353px; left: 12px; " data-bs-toggle="modal" data-bs-target="#exampleModal4">
                       <i class="fa-solid fa-envelope fa-lg" id="up-icon22"></i>
                     </button>
 
-                    <button type="button" class="btn btn-success" id="but22" style="position: absolute; z-index: 1000; font-size: xx-small; top: 312px; left: 52px; " data-bs-toggle="modal" data-bs-target="#exampleModal2">
+                    <button type="button" class="btn btn-success" id="but22" style="position: absolute; z-index: 1000; font-size: xx-small; top: 353px; left: 52px; " data-bs-toggle="modal" data-bs-target="#exampleModal2">
                       <i class="fa-brands fa-whatsapp fa-lg" id="up-icon22"></i>
                     </button>
 
-                    <button type="button" class="btn btn-primary" id="but33" style="position: absolute; z-index: 1000; font-size: xx-small; top: 312px; left: 92px; " data-bs-toggle="modal" data-bs-target="#exampleModal3">
+                    <button type="button" class="btn btn-primary" id="but33" style="position: absolute; z-index: 1000; font-size: xx-small; top: 353px; left: 92px; " data-bs-toggle="modal" data-bs-target="#exampleModal3">
                       <i class="fa-solid fa-comment-sms fa-lg" id="up-icon22"></i>
                     </button>
 
@@ -288,13 +269,30 @@
             </div>
                                   
         </div>
+        <div class="col-md-3" id="chart-containerB">
+          <h5 id="messa" style="font-size: 11px; margin-bottom: 16px;">Only 2020 Flash Data-Voilence Incidents</h5>
+          <div id="map-container2">
+            <div class="wrapper">
+              <!--<div class="folium-map" id="map_name_1"></div>-->
+              <div id="map2" style="border-radius: 15px;"></div>
 
-        <div class="col-md-3" id="chart-container">
+              
+              <button id="reset-map2" onclick="resetMap2()" style="position: absolute; top: 158px; left: 12px; z-index: 1000; font-size: large;"><i class="fa-solid fa-rotate-right fa-sm"></i><span class="hover-text3_reset">Reset</span></button> 
+            
+              <div id="watermark-container">
+                <p class="watermark">Geography @ KNUST</p>
+              </div>
+            </div>
+            
+          </div>
+
+        </div>
+
+        <div class="col-md-3" id="chart-container1b">
            <select class="bt1 btn-dark" id="electoralSelection2">
-                <option selected value="">Electoral Points</option>
+                <option value="valid_votes">Valid Votes</option>
                 <option value="reg_voters">Registered Voters</option>
                 <option value="votes_casted">Votes Casted</option>
-                <option value="valid_votes">Valid Votes</option>
                 <option value="rejected_votes">Rejected Votes</option>
                <!--  {% for gH2 in dfGroupH3 %}
                 <option >{{gH2}}</option>
@@ -337,10 +335,9 @@
         </div>
         <div class="col-md-3" id="chart-container" style="margin-top: 10px">
             <select class="bt1 btn-dark" id="electoralSelection5">
-                <option selected value="">Electoral Points Inactive</option>
+                <option value="valid_votes">Valid Votes</option>
                 <option value="reg_voters">Registered Voters</option>
                 <option value="votes_casted">Votes Casted</option>
-                <option value="valid_votes">Valid Votes</option>
                 <option value="rejected_votes">Rejected Votes</option>
                 <!-- {% for gH5 in dfGroupH5 %}
                 <option >{{gH5}}</option>

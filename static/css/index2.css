@@ -359,6 +359,40 @@ textarea{
 #chart-container {
     background-color: #e9ecef
 }
+#chart-containerA {
+    left: 7px
+}
+#chart-containerB {
+    left: 16px
+}
+#chart-container1b {
+    background-color: #e9ecef
+    left: 16px
+}
+#watermark-container {
+    position: absolute; 
+    top: 350px; 
+    left: 130px; 
+    z-index: 1000;
+}
+#watermark-container2 {
+    position: absolute; 
+    top: 320px; 
+    left: 133px; 
+    z-index: 1000;
+}
+.watermark {
+    opacity: 1; 
+    color: #d68d33;
+}
+.watermark2 {
+    position: relative;
+    opacity: 1; 
+    color: #d68d33; 
+    font-size: small;
+    margin-bottom: 15px;
+    left: 19px;
+}
 
 @media screen and (max-width: 600px)
 {
@@ -368,16 +402,23 @@ textarea{
     #nano_2 {
         display: none;
     }
+    #bar1 {
+        left: -9px;
+    }
+    #cfluid {
+        position: relative;
+        left: -9px;
+    }
     #regionSelection {
     font-size: 2vw;
-    margin-left: 1vw;
-    margin-top: -0.2vh;
+    margin-left: 7.7vw;
+    margin-top: -1.2vh;
     }
     #yearSelection {
     font-size: 1.5vw;
     margin-right: 1vw;
     margin-left: -25vw;
-    margin-top: -0.5vh;
+    margin-top: -1.2vh;
     }
     #title_1 {
     border-left-style: inset;
@@ -403,43 +444,86 @@ textarea{
     .title_1D {
         display: none;
     }
+    #chart-container {
+        left: -7.5px;
+    }
+    #chart-containerA {
+        left: -7.5px;
+        top: 406px;
+    }
+    #chart-containerB {
+        left: -7.5px;
+        top: 407px;
+    }
+    #chart-container1b {
+        left: -7.5px;
+        bottom: 801px;
+    }
     #map-container {
         width: 100vw;
-        margin-left: -7px;
+        margin-left: 0px;
     }
     #container1 {
-        margin-left: -8px;
+        margin-left: 0px;
         width: 100vw;
     }
     #map-container2 {
-        margin-left: -8px;
+        margin-left: 0px;
         width: 100vw;
     }
     #container1b {
-        margin-left: -8px;
+        margin-left: 0px;
         width: 100vw;
     }
     #container2 {
-        margin-left: -8px;
+        margin-left: 0px;
         width: 100vw;
     }
     #container3 {
-        margin-left: -7px;
+        margin-left: 0px;
         width: 100vw;
     }
     #container3b {
-        margin-left: -7px;
+        margin-left: 0px;
         width: 100vw;
     }
     #container2b {
-        margin-left: -8px;
+        margin-left: 0px;
         width: 100vw;
     }
     .bt2 {
         margin-left: -6px;
     }
+    #electoralSelection1 {
+        margin-left: 10px;
+
+    }
+    #electoralSelection2 {
+        margin-left: 10px;
+
+    }
+    #electoralSelection3 {
+        margin-left: 10px;
+
+    }
+    #electoralSelection4 {
+        margin-left: 10px;
+
+    }
+    #electoralSelection5 {
+        margin-left: 10px;
+
+    }
+    #messa {
+        margin-left: 10px;
+
+    }
+    #canter {
+        margin-left: 10px;
+
+    }
     #censusSelection {
-        margin-left: -5px;
+        margin-left: 10px;
         font-size: 3vw;
     }
     .bt1 {
@@ -492,6 +576,19 @@ textarea{
     }
     .pp2 {
         width: 24vw;
+    }
+    #watermark-container {
+        top: 326px;
+        left: 145px;
+    }
+    #watermark-container2 {
+        top: 294px;
+        left: 17px;
+    }
+    .watermark2 {
+    position: relative;
+    left: 112px;
+    margin-bottom: 19px;
     }
 
     

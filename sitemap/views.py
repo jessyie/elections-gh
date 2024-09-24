@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
 
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -368,7 +369,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     # else:
     #     pass
 
-
+    print(df)
 
 
     grouped = df.groupby(['year_', 'office'])
