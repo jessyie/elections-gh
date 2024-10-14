@@ -69,19 +69,19 @@
                     
                     <button id="reset-map2" onclick="resetMap()" style="position: absolute; top: 158px; left: 12px; z-index: 1000; font-size: large;"><i class="fa-solid fa-rotate-right fa-sm"></i><span class="hover-text3_reset">Reset</span></button> 
                     
-                    <a href="{% url 'my_routing' %}"><button id="ps_routing" style="position: absolute; top: 200px; left: 12px; z-index: 1000; font-size: large;"><i class="fa-solid fa-diamond-turn-right fa-sm"></i><span class="hover-text_ps">PS Route</span></button></a>
+                    <a href="{% url 'my_routing' %}"><button id="ps_routing" style="position: absolute; top: 200px; left: 12px; z-index: 1000; font-size: large;"><i class="fa-solid fa-diamond-turn-right fa-sm"></i><span class="hover-text_ps">Plan Travel</span></button></a>
                     <div id="watermark-container2">
-                        <p class="watermark">Geography @ KNUST</p><p class="watermark2">Only 2020 Constituency Map Available</p>
+                        <p class="watermark">Geography @ KNUST</p>
                     </div>
-                    <button type="button" class="btn btn-danger" id="but11"  style="position: absolute; z-index: 1000; font-size: xx-small; top: 353px; left: 12px; " data-bs-toggle="modal" data-bs-target="#exampleModal4">
+                    <button type="button" class="btn btn-danger" id="but11" data-bs-toggle="modal" data-bs-target="#exampleModal4">
                       <i class="fa-solid fa-envelope fa-lg" id="up-icon22"></i>
                     </button>
 
-                    <button type="button" class="btn btn-success" id="but22" style="position: absolute; z-index: 1000; font-size: xx-small; top: 353px; left: 52px; " data-bs-toggle="modal" data-bs-target="#exampleModal2">
+                    <button type="button" class="btn btn-success" id="but22" data-bs-toggle="modal" data-bs-target="#exampleModal2">
                       <i class="fa-brands fa-whatsapp fa-lg" id="up-icon22"></i>
                     </button>
 
-                    <button type="button" class="btn btn-primary" id="but33" style="position: absolute; z-index: 1000; font-size: xx-small; top: 353px; left: 92px; " data-bs-toggle="modal" data-bs-target="#exampleModal3">
+                    <button type="button" class="btn btn-primary" id="but33" data-bs-toggle="modal" data-bs-target="#exampleModal3">
                       <i class="fa-solid fa-comment-sms fa-lg" id="up-icon22"></i>
                     </button>
 
@@ -322,9 +322,37 @@
         <div class="col-md-3" id="chart-container" style="margin-top: 10px">
             <select id='censusSelection' class=btn-dark>
                         <option id='censusOption' selected value="">POPULATION DEMOGRAPHICS</option>
-                        {% for gH in dfGroupH %}
-                        <option >{{gH}}</option>
-                        {% endfor %}
+                        <option value="Total_Pop">Total Pop</option>
+                        <option value="Percent_Male">Percent Male</option>
+                        <option value="Percent_Female">Percent Female</option>
+                        <option value="Percent_Age_1829">Percent Age 18-29</option>
+                        <option value="Percent_Age_3049">Percent Age 30-49</option>
+                        <option value="Percent_Age_5064">Percent Age 50-64</option>
+                        <option value="Percent_Age_65_and_Above">Percent Age 65 and Above</option>
+                        <option value="Percent_EduBasic">Percent Edu-Basic</option>
+                        <option value="Percent_EduSecondary">Percent Edu-Secondary</option>
+                        <option value="Percent_EduTertiary">Percent Edu-Tertiary</option>
+                        <option value="Percent_No_Formal">Percent No Formal</option>
+                        <option value="Percent_Literate">Percent Literate</option>
+                        <option value="Percent_NonLiterate">Percent Non-Literate</option>
+                        <option value="Percent_Urban">Percent Urban</option>
+                        <option value="Percent_Rural">Percent Rural</option>
+                        <option value="Percent_Employed">Percent Employed</option>
+                        <option value="Percent_Unemployed">Percent Unemployed</option>
+                        <option value="Percent_Economically_Active">Percent Economically Active</option>
+                        <option value="Percent_Akan">Percent Akan</option>
+                        <option value="Percent_GaDangme">Percent Ga-Dangme</option>
+                        <option value="Percent_Ewe">Percent Ewe</option>
+                        <option value="Percent_Guan">Percent Guan</option>
+                        <option value="Percent_Gurma">Percent Gurma</option>
+                        <option value="Percent_MoleDagbani">Percent Mole-Dagbani</option>
+                        <option value="Percent_Grusi">Percent Grusi</option>
+                        <option value="Percent_Mande">Percent Mande</option>
+                        <option value="Percent_Others">Percent Others</option>
+                        <option value="Percent_Christian">Percent Christian</option>
+                        <option value="Percent_Islam">Percent Islam</option>
+                        <option value="Percent_Traditionalist">Percent Traditionalist</option>
+                        <option value="Percent_Other">Percent Other</option>
 
             </select>
             <div id="container3"></div>
@@ -367,7 +395,25 @@
 
 
     </div>
+    <!-- Modal -->
+    <div class="modal fade" id="staticBackdrop" style="padding-top: 151px;
+    padding-right: 720px;" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-body" style="background-color: #dee9fa">
+            <div id="modal-body-content">
+              <div class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 </div>
+
 
 <div id='parliament10' style = 'display:none;'>{{merged_GHMap2A | safe}}</div>
 <div id='presidential10' style = 'display:none;'>{{merged2_GHMap2A | safe}}</div>
@@ -381,4 +427,8 @@
 <div id='flashConst' style = 'display:none;'>{{mergedFlashCONST_GHMap2 | safe}}</div>
 <div id='flashConstNew' style = 'display:none;'>{{mergedFlashCONST_GHMap2New | safe}}</div>
 <div id='polling_stations' style = 'display:none;'>{{mergedFlashPS_GHMap2 | safe}}</div>
+<div id='parliamentConst10' style = 'display:none;'>{{merged_GHMap2Const2 | safe}}</div>
+<div id='presidentialConst10' style = 'display:none;'>{{merged2_GHMap2Const2 | safe}}</div>
+<div id='parliamentConst16CONST2_10' style = 'display:none;'>{{merged_GHMap2ConstCONST2_10 | safe}}</div>
+<div id='presidentialConst16CONST2_10' style = 'display:none;'>{{merged2_GHMap2ConstCONST2_10 | safe}}</div>
 {% endblock %}

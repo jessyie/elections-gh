@@ -211,6 +211,9 @@ textarea{
 .leaflet-routing-alt {
     opacity: 1;
 }
+.leaflet-pane {
+    margin-top: 45px;
+}
 
 @media screen and (max-width: 600px)
 {
@@ -225,6 +228,9 @@ textarea{
     #but3 {    
         top: 92vh;
            
+    }
+    .leaflet-pane {
+    margin-left: -5vw;
     }
 
 }

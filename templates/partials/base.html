@@ -25,6 +25,7 @@
     integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
   <title>Geoproject</title>
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
   <script type="text/javascript" src="https://code.highcharts.com/stock/highstock.js"></script>
   <script src="https://code.highcharts.com/modules/exporting.js"></script>
   <script src="https://code.highcharts.com/modules/export-data.js"></script>
@@ -40,7 +41,6 @@
 
   <!-- We're going to import a bunch of scripts here. If it doesn't work, we'll remove them -->
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
-  <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
@@ -71,7 +71,7 @@
         <option value="National">National</option>
         <option value="Regions">Regions</option>
         {% for ga in graph1BX %}
-        <option value="{{ ga }}">{{ga}}</option>
+        <option value="{{ga}}">{{ga}}</option>
         {% endfor %}
         
       </select>
@@ -86,7 +86,7 @@
         <option value="2020">2020</option>
         <option value="2016">2016</option>
         <option value="2012">2012</option>
-        <option value="28008">2008 Runoff</option>
+        <option value="2009">2008 Runoff</option>
         <option value='2008'>2008</option>
         <option value='2004'>2004</option>
              
@@ -181,7 +181,7 @@ window.onload = function() {
 
 </script> -->
     
-
+  
   <script type="text/javascript">
     (function(H) {
 
@@ -368,9 +368,6 @@ window.onload = function() {
         lineWidth: 0
       },
       yAxis: {
-        scrollbar: {
-          enabled: false
-        },
         min: 0,
         title: {
           text: 'Total Valid Votes',
@@ -1117,8 +1114,10 @@ window.onload = function() {
 
       xAxis: {
         categories: {{ graph1AX2P | safe}},
+        min: 0,
+        max: 5,
         scrollbar: {
-          enabled: false
+          enabled: true
         },
         title: {
           text: 'Regions'
@@ -1227,6 +1226,7 @@ window.onload = function() {
     });
 
 
+
   </script>
 
  <!-- 
@@ -1269,6 +1269,7 @@ window.onload = function() {
 }
     
   </script> -->
+  
     
   
   

@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 #import folium
 import pandas as pd # type: ignore
+import numpy as np
 import os # type: ignore
 import geopandas as gpd
 import fiona
@@ -146,7 +147,6 @@ df3 = pd.read_sql(queryPop, engine)
 #/////////////////////////////////
 
 
-
 # 2024
 
 # FLASH REGION
@@ -238,7 +238,11 @@ flash_PSdf = flash_PSdf2020
 data_loc_str = str(settings.DATA_LOC)
 
 
-
+GHMap2 = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions16.geojson'))
+GHMap = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions.geojson'))
+GHMapConst = gpd.read_file(os.path.join(data_loc_str, 'images', 'constituencies2020.geojson'))
+GHMapConst2 = gpd.read_file(os.path.join(data_loc_str, 'images', 'constituencies2004_2008.geojson'))
+GHMap_PS = gpd.read_file(os.path.join(data_loc_str, 'images', 'polling_stations.geojson'))
 
 
 # print(f"This is df2:", df2)
@@ -266,9 +270,51 @@ data_loc_str = str(settings.DATA_LOC)
     # dfGroupNew1 = groupedNewA.get_group((year, 'Parliament', region))
     # dfGroupNew1B = groupedNewA.get_group((year, 'Presidential First Round', region))
 
-def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electoral='valid_votes'):
+def initialise_chart(year = '2020', region='Northern', census='Total_Pop', electoral='valid_votes'):
+
+    # FLASH DATA
+
+    #_________________
+
+    # Define the year for filtering
+    if int(year) <= 2020:
+        # Use 2020 data if the year is less than or equal to 2020
+        flash_REGdf = flash_REGdf2020
+        flash_CONSTdf = flash_CONSTdf2020
+        flash_PSdf = flash_PSdf2020
+    else:
+        # Modify queries to use the specific year
+        queryREGdf = f"""
+            SELECT "{year}regions"."RegName","{year}flash_reg".* 
+                FROM public."{year}flash_reg"
+                Join public."{year}regions" on "{year}flash_reg"."RegCode"="{year}regions"."RegCode";
+            """
+        queryCONSTdf = f"""
+            SELECT "{year}regions"."RegName","{year}regions"."RegCode","{year}constituencies"."ConstName", "{year}flash_const".* 
+                FROM public."{year}flash_const"
+                Join public."{year}constituencies" on "{year}flash_const"."ConstCode"="{year}constituencies"."ConstCode"
+                Join public."{year}regions" on "{year}constituencies"."RegCode"="{year}regions"."RegCode";
+            """
+        queryPSdf = f"""
+            SELECT * 
+                FROM public."{year}flash_ps";
+            """
+
+        # Fetch the data for the selected year
+        flash_REGdf = pd.read_sql(queryREGdf, engine)
+        flash_CONSTdf = pd.read_sql(queryCONSTdf, engine)
+        flash_PSdf = pd.read_sql(queryPSdf, engine)
+    
+
+    #_________________
 
     global df
+
+    # Define the list of election years including 2024
+    years = [2004, 2008, 2009, 2012, 2016, 2020, 2024]
+
+    current_year = int(year)
+    previous_years = [y for y in years if y < current_year]
 
     #  For 2020 and beyond 
 
@@ -293,13 +339,30 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
         """
 
-
-    if int(year) in [2020, 2024]:
-        query = query1.format(year=year)
+    # Query for the current year
+    if current_year in [2020, 2024]:
+        query = query1.format(year=current_year)
     else:
-        query = query2.format(year=year)
+        query = query2.format(year=current_year)
+
+    # if int(year) in [2020, 2024]:
+    #     query = query1.format(year=year)
+    # else:
+    #     query = query2.format(year=year)
     
     df = pd.read_sql(query, engine)
+
+    first_C_column_df = df.columns[df.columns.str.contains('_C')][0]
+
+    df = df.loc[:, 'ConstName': first_C_column_df]
+
+    # df = df.astype({
+    #     "Ward Number": "int8",
+    #     "Voter ID": "int32",
+    #     "Age": "float32",
+    #     "First Name": "string",
+    #     "Last Name": "string"
+    # })
 
     # dfB = pd.read_sql(query2, engine)
 
@@ -369,7 +432,8 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     # else:
     #     pass
 
-    print(df)
+    #print(df['RegCode'])
+    #df.info()
 
 
     grouped = df.groupby(['year_', 'office'])
@@ -381,12 +445,36 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     dfGroupNew1B = groupedNewA.get_group((year, 'Presidential', region))
 
     grouped2P = df3.groupby(['RegName'])
-    dfGroup2P = grouped2P.get_group(region)
+    if region in grouped2P.groups:
+        dfGroup2P = grouped2P.get_group(region)
+    else:
+        print(f"Region '{region}' not found in grouped data.")
+        # Handle the case for missing data (e.g., set dfGroup2P to None or some default value)
+        dfGroup2P = None
 
     # GROUPING FLASH CONST BY REGION
 
     flash_CONSTdf2020_GROUPED = flash_CONSTdf2020.groupby(['RegName'])
-    flash_CONSTdf2020_GROUPED_DONE = flash_CONSTdf2020_GROUPED.get_group(region) 
+    
+    # Check if the region exists in the grouped data
+    if region in flash_CONSTdf2020_GROUPED.groups:
+        flash_CONSTdf2020_GROUPED_DONE = flash_CONSTdf2020_GROUPED.get_group(region)
+        
+        # Proceed with the merge if the group is found
+        mergedFlashCONST_GHMap2_json = GHMapConst.merge(
+            flash_CONSTdf2020_GROUPED_DONE, 
+            left_on="ConstCode", 
+            right_on="ConstCode"
+        )
+        
+        # Convert merged result to JSON
+        mergedFlashCONST_GHMap2 = mergedFlashCONST_GHMap2_json.to_json()
+
+    else:
+        print(f"Region '{region}' not found in grouped data.")
+        
+        # Handle missing region case
+        mergedFlashCONST_GHMap2 = None  # Or set to a default value like empty JSON "{}"
 
     
     
@@ -399,210 +487,463 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     #//  ANALYSIS OF DATA [PANDAS]
     #//____________________________//
 
+    # Function for Total VALID_VOTES 
+
+    def total_valid_votes(dfGroup):
+        first_C_column = dfGroup.columns[dfGroup.columns.str.contains('_C')][0]
+        first_rejected_column = dfGroup.columns[dfGroup.columns.str.contains('rejected')][0]
+
+        dfGroupA = dfGroup.loc[:,electoral:first_C_column]
+        dfGroupA = dfGroupA.drop(columns=first_C_column)
+        dfGroupA = dfGroupA.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
+        dfGroupA = dfGroupA.apply(pd.to_numeric)
+
+
+        return dfGroupA
+
+    # a = total_valid_votes(dfGroup2)
+    # print(a)
+
+    # Function for Total sum based on each region/constituency
+
+    def total_valid_votes_levelBased(dfGroup, RegName, *args):
+        # If args contains more than one column, you can select all at once
+        columns = [RegName] + list(args) + [electoral]  # Add 'electoral' to the columns to be used
+        
+        # Select the required columns
+        dfRegions = dfGroup[columns].copy()
+        
+        # Clean the 'electoral' column by removing commas and converting it to an integer
+        dfRegions[electoral] = dfRegions[electoral].replace(',', '', regex=True).astype(int)
+        
+        # Group by the `RegName` column and sum the 'electoral' values
+        dfRegionsSum = dfRegions.groupby(by=[RegName])[electoral].sum().reset_index()
+        
+        # Sorting the results in descending order by 'electoral'
+        dfRegionsSum = dfRegionsSum.sort_values(by=electoral, ascending=False)
+        
+        return dfRegionsSum, dfRegions
+
+
+    def total_valid_votes_parties(dfGroup):
+        first_C_column = dfGroup.columns[dfGroup.columns.str.contains('_C')][0]
+        first_rejected_column = dfGroup.columns[dfGroup.columns.str.contains('rejected')][0]
+        dfGroupC = dfGroup.loc[:,first_rejected_column:first_C_column]
+        dfGroupC = dfGroupC.drop(columns=[first_rejected_column, first_C_column])
+        dfGroupC = dfGroupC.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
+        dfGroupC = dfGroupC.apply(pd.to_numeric) # Converting all the string in the columns to integers
+        #print('yeah', dfGroupC)
+        tSumC = dfGroupC.sum().reset_index() # Sum operation on a specific column
+
+        return tSumC
+
+
+    def total_valid_votes_parties_levelBased(dfRegions, dfGroupA, RegName, *args):
+        # Concatenate dfRegions and dfGroupA
+        data = [dfRegions, dfGroupA]
+        dfMerge = pd.concat(data, axis=1, join='inner')
+        dfGroupG = dfMerge
+        df_cleanmodified = dfGroupG.loc[:, ~dfGroupG.columns.duplicated()]
+
+        df_clean = df_cleanmodified.copy()
+
+        # Check if args contains any additional grouping columns
+        if args:
+            # Skip grouping and summing, use df_clean as-is
+            numeric_columns = df_clean.columns[2:]  # Adjusting this to the range of actual numeric columns
+            df_clean[numeric_columns] = df_clean[numeric_columns].apply(pd.to_numeric, errors='coerce')
+            df_grouped3 = df_clean
+            
+        else:
+            # Group by RegName and sum the numeric columns
+            numeric_columns = df_clean.columns[1:]  # Adjusting this to the range of actual numeric columns
+            df_clean[numeric_columns] = df_clean[numeric_columns].apply(pd.to_numeric, errors='coerce')
+            df_grouped3 = df_clean.groupby(by=RegName)[numeric_columns].sum().reset_index()
+            
+
+        # Extract the first rejected column and prepare data for further analysis
+        first_rejected_column3 = df_grouped3.columns[df_grouped3.columns.str.contains('rejected')][0]
+        graph3AY = df_grouped3.loc[:, first_rejected_column3:]
+        graph3AY = graph3AY.drop(columns=first_rejected_column3)
+        graph3AX = df_grouped3[RegName].values.tolist()
+
+        # Clean and prepare data
+        df_grouped3z = df_grouped3.drop(columns=['rejected_votes', 'valid_votes'])
+        df_grouped3z.fillna(0, inplace=True)
+        df_grouped3z = df_grouped3z.values.tolist()
+
+        # Add 'Values' and 'Second_Highest_Value' columns
+        df_grouped3['Values'] = graph3AY.apply(max, axis=1)
+        df_grouped3['Second_Highest_Value'] = graph3AY.apply(lambda row: sorted(row)[-2], axis=1)
+
+        # Find Winners and Second Highest Value Name
+        #df_grouped3['Winner'] = graph3AY.idxmax(axis=1)
+
+        def assign_winner(row):
+            if row.isna().all() or (row == 0).all():  # Check if all values are NaN or 0
+                return "No winner"
+            else:
+                return row.idxmax()  # Return the party with the highest value (idxmax)
+
+        # Apply the function to each row in the DataFrame to assign the winner
+        df_grouped3['Winner'] = graph3AY.apply(assign_winner, axis=1)
+
+        # Function to assign the second-highest value name
+        def assign_second_highest(row):
+            # Check for "No winner" condition (all values are NaN or 0)
+            if row.isna().all() or (row == 0).all():  # If all values are NaN or 0
+                return "No second place"
+            elif row.nunique() == 1:  # If all values are identical (no second place)
+                return "No second place"
+            else:
+                # Drop the max value and return the index of the second-highest
+                return row.drop(row.idxmax()).idxmax()
+
+        # Apply the function to assign the second-highest value name
+        df_grouped3['Second_Highest_Value_Name'] = graph3AY.apply(assign_second_highest, axis=1)
+        
+        # Calculate total and percentages
+        df_grouped3['Total'] = graph3AY.sum(axis=1)
+        df_grouped3['Winner_Percentage'] = (df_grouped3['Values'] / df_grouped3['Total'] * 100).round(2)
+
+        # Replace NaN values with 'No winner'
+        df_grouped3['Winner_Percentage'] = df_grouped3['Winner_Percentage'].fillna(0)
+
+        df_grouped3['Second_Highest_Percentage'] = (df_grouped3['Second_Highest_Value'] / df_grouped3['Total'] * 100).round(2)
+
+        # Replace NaN values with 'No winner'
+        df_grouped3['Second_Highest_Percentage'] = df_grouped3['Second_Highest_Percentage'].fillna(0)
+
+        # Define a color mapping dictionary for each party
+        value_mapping = {'NPP': 10, 'NDC': 8, 'CPP': 5, 'No winner': 3}
+        df_grouped3['Values_map'] = df_grouped3['Winner'].map(value_mapping)
+
+        # Adjust the RegName and args in values_dict
+        if args:
+            # If there is an arg, use it as the index and include RegName in the columns
+            index_column = args[0]
+            values_dict = df_grouped3.set_index(index_column)[[RegName, "Values_map", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
+        else:
+            # If no arg, use RegName as the index and don't include it in the columns
+            values_dict = df_grouped3.set_index(RegName)[["Values_map", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
+
+        return values_dict, df_grouped3z, graph3AX
+
+
+    # Looping to get the winners for the various years
+
+    def prev_wins_reg(office, values_dict):
+
+        # Loop through previous years and fetch their winners
+        for prev_year in previous_years:
+            # Select the appropriate query based on the previous year
+            if prev_year in [2020, 2024]:
+                query_prev = query1.format(year=prev_year)
+            else:
+                query_prev = query2.format(year=prev_year)
+
+            # Fetch data for the previous year
+            df_prev = pd.read_sql(query_prev, engine)
+
+            df_prev['year_'] = df_prev['year_'].astype(int)
+            grouped_prev = df_prev.groupby(['year_', 'office'])
+            dfGroup_prev = grouped_prev.get_group((prev_year, office))
+            
+
+            # Assuming similar structure in previous years
+            # grouped_prev = df_prev.groupby(['year_', 'office', 'RegName'])
+            # dfGroupPrev = grouped_prev.get_group((prev_year, 'Parliamentary', region))
+
+            dfGroupA_prev = total_valid_votes(dfGroup_prev)
+            dfRegions_prev = total_valid_votes_levelBased(dfGroup_prev, 'RegName')[1]
+
+            # Get the winners for this previous year
+            values_dict_prev = total_valid_votes_parties_levelBased(dfRegions_prev, dfGroupA_prev, "RegName")[0]
+
+            # Merge the previous year's winners with the current year's values_dict
+            values_dict[f"Winner_{prev_year}"] = values_dict_prev['Winner']
+
+            # Replace NaN values with 'No winner'
+            values_dict[f"Winner_{prev_year}"] = values_dict[f"Winner_{prev_year}"].fillna("No winner")
+
+
+        return values_dict
+
+
+    def prev_wins_const(office, values_dict):
+        # Loop through previous years and fetch their winners
+        for prev_year in previous_years:
+            # Select the appropriate query based on the previous year
+            if prev_year in [2020, 2024]:
+                query_prev = query1.format(year=prev_year)
+            else:
+                query_prev = query2.format(year=prev_year)
+
+            # Fetch data for the previous year
+            df_prev = pd.read_sql(query_prev, engine)
+            df_prev['year_'] = df_prev['year_'].astype(int)
+
+            # Group data by year, office, and region
+            grouped_prev = df_prev.groupby(['year_', 'office', 'RegName'])
+
+            # Check if the group exists
+            if (prev_year, office, region) in grouped_prev.groups:
+                # If the group exists, fetch it
+                dfGroup_prev = grouped_prev.get_group((prev_year, office, region))
+
+                # Apply further transformations
+                dfGroupA_prev = total_valid_votes(dfGroup_prev)
+                dfRegions_prev = total_valid_votes_levelBased(dfGroup_prev, 'ConstName', 'ConstCode')[1]
+
+                # Get the winners for this previous year
+                values_dict_prev = total_valid_votes_parties_levelBased(dfRegions_prev, dfGroupA_prev, "ConstName", "ConstCode")[0]
+
+                # Merge the previous year's winners with the current year's values_dict
+                values_dict[f"Winner_{prev_year}"] = values_dict_prev['Winner']
+
+                # Replace NaN values with 'No winner'
+                values_dict[f"Winner_{prev_year}"] = values_dict[f"Winner_{prev_year}"].fillna("No winner")
+            else:
+                # Handle missing group, e.g., log, skip, or assign default values
+                print(f"No data for year: {prev_year}, office: {office}, region: {region}")
+                values_dict[f"Winner_{prev_year}"] = "No data"
+
+        return values_dict
+
+
+
+
 
     # // Finding the Total VALID_VOTES votes on Parliament (A)
     # Find the first column that contains '_C'
-    first_C_column = dfGroup.columns[dfGroup.columns.str.contains('_C')][0]
-    first_rejected_column = dfGroup.columns[dfGroup.columns.str.contains('rejected')][0]
+    # first_C_column = dfGroup.columns[dfGroup.columns.str.contains('_C')][0]
+    # first_rejected_column = dfGroup.columns[dfGroup.columns.str.contains('rejected')][0]
 
-    #print(first_rejected_column)
+    # #print(first_rejected_column)
 
-    dfGroupA = dfGroup.loc[:,electoral:first_C_column]
-    dfGroupA = dfGroupA.drop(columns=first_C_column)
-    #print(dfGroupA)
-    dfGroupA = dfGroupA.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
-    dfGroupA = dfGroupA.apply(pd.to_numeric) # Converting all the string in the columns to integers
-    tSum = dfGroupA[electoral].sum() # Sum operation on a specific column
+    # dfGroupA = dfGroup.loc[:,electoral:first_C_column]
+    # dfGroupA = dfGroupA.drop(columns=first_C_column)
+    # #print(dfGroupA)
+    # dfGroupA = dfGroupA.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
+    # dfGroupA = dfGroupA.apply(pd.to_numeric) # Converting all the string in the columns to integers
+
+    dfGroupA = total_valid_votes(dfGroup)
+    #print(a)
+    tSum = dfGroupA[electoral].sum().astype(int).tolist() # Sum operation on a specific column
     #print(tSum)
 
     # // Finding the Total VALID_VOTES votes on Presidential (A)
-    first_C_column2 = dfGroup2.columns[dfGroup2.columns.str.contains('_C')][0]
-    first_rejected_column2 = dfGroup2.columns[dfGroup2.columns.str.contains('rejected')][0]
+    # first_C_column2 = dfGroup2.columns[dfGroup2.columns.str.contains('_C')][0]
+    # first_rejected_column2 = dfGroup2.columns[dfGroup2.columns.str.contains('rejected')][0]
 
-    dfGroupB = dfGroup2.loc[:,electoral:first_C_column2]
-    dfGroupB = dfGroupB.drop(columns=first_C_column2)
-    dfGroupB = dfGroupB.replace(',','', regex=True)
-    dfGroupB = dfGroupB.apply(pd.to_numeric)
-    tSum2 = dfGroupB[electoral].sum()
+    # dfGroupB = dfGroup2.loc[:,electoral:first_C_column2]
+    # dfGroupB = dfGroupB.drop(columns=first_C_column2)
+    # dfGroupB = dfGroupB.replace(',','', regex=True)
+    # dfGroupB = dfGroupB.apply(pd.to_numeric)
+    dfGroupB = total_valid_votes(dfGroup2)
+    #print(b)
+    tSum2 = dfGroupB[electoral].sum().astype(int).tolist()
+    #print(tSum2)
     #print(dfGroupB)
 
     # // Finding the Total sum based on each region for Parliament (B)
-    dfRegions = dfGroup[["RegName", electoral]].copy()
-    dfRegions[electoral] = dfRegions[electoral].replace(',','', regex=True)
-    dfRegions[electoral] = dfRegions[electoral].astype('int')
-    dfRegionsSum = dfRegions.groupby(by=["RegName"])[electoral].sum().reset_index()
+    # dfRegions = dfGroup[["RegName", electoral]].copy()
+    # dfRegions[electoral] = dfRegions[electoral].replace(',','', regex=True)
+    # dfRegions[electoral] = dfRegions[electoral].astype('int')
+    # dfRegionsSum = dfRegions.groupby(by=["RegName"])[electoral].sum().reset_index()
 
-    # Sorting in descending order
-    dfRegionsSum = dfRegionsSum.sort_values(by=electoral, ascending=False)
-    #print(dfRegionsSum)
+    # # Sorting in descending order
+    # dfRegionsSum = dfRegionsSum.sort_values(by=electoral, ascending=False)
+
+    dfRegions = total_valid_votes_levelBased(dfGroup, 'RegName')[1]
+    dfRegionsSum = total_valid_votes_levelBased(dfGroup, 'RegName')[0]
+    # cax = c['RegName'].values.tolist()
+    # cay = c[electoral]
+    #print(cax)
+    #print(cay)
     graph1AX = dfRegionsSum['RegName'].values.tolist()
-    graph1AY = dfRegionsSum[electoral]
-    #print(dfRegionsSum)
+    graph1AY = dfRegionsSum[electoral].values.astype(int).tolist()
+    #print(graph1AX)
     #print(graph1AY)
 
     # // Finding the Total sum based on each region for Presidential (B)
-    dfRegions2 = dfGroup2[["RegName", electoral]].copy()
-    dfRegions2[electoral] = dfRegions2[electoral].replace(',','', regex=True)
-    dfRegions2[electoral] = dfRegions2[electoral].astype('int')
-    dfRegionsSum2 = dfRegions2.groupby(by=["RegName"])[electoral].sum().reset_index()
+    # dfRegions2 = dfGroup2[["RegName", electoral]].copy()
+    # dfRegions2[electoral] = dfRegions2[electoral].replace(',','', regex=True)
+    # dfRegions2[electoral] = dfRegions2[electoral].astype('int')
+    # dfRegionsSum2 = dfRegions2.groupby(by=["RegName"])[electoral].sum().reset_index()
 
-    dfRegionsSum2 = dfRegionsSum2.sort_values(by=electoral, ascending=False)
+    # dfRegionsSum2 = dfRegionsSum2.sort_values(by=electoral, ascending=False)
 
-    graph1BX = dfRegionsSum2['RegName']
-    graph1BY = dfRegionsSum2[electoral]
-    #print(dfRegionsSum2)
+    dfRegions2 = total_valid_votes_levelBased(dfGroup2, 'RegName')[1]
+
+    dfRegionsSum2 = total_valid_votes_levelBased(dfGroup2, 'RegName')[0]
+
+    graph1BX = dfRegionsSum2['RegName'].values.tolist()
+    graph1BY = dfRegionsSum2[electoral].values.astype(int).tolist()
+    #print(graph1BX)
 
     # // Do Total sum operations for each party on Parliament (C)
-    dfGroupC = dfGroup.loc[:,first_rejected_column:first_C_column]
-    dfGroupC = dfGroupC.drop(columns=[first_rejected_column, first_C_column])
-    dfGroupC = dfGroupC.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
-    dfGroupC = dfGroupC.apply(pd.to_numeric) # Converting all the string in the columns to integers
-    #print('yeah', dfGroupC)
-    tSumC = dfGroupC.sum().reset_index() # Sum operation on a specific column
-    graph2AX = tSumC['index']
-    graph2AY = tSumC[0]
+    # dfGroupC = dfGroup.loc[:,first_rejected_column:first_C_column]
+    # dfGroupC = dfGroupC.drop(columns=[first_rejected_column, first_C_column])
+    # dfGroupC = dfGroupC.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
+    # dfGroupC = dfGroupC.apply(pd.to_numeric) # Converting all the string in the columns to integers
+    # #print('yeah', dfGroupC)
+    # tSumC = dfGroupC.sum().reset_index() # Sum operation on a specific column
+    tSumC = total_valid_votes_parties(dfGroup)
+    graph2AX = tSumC['index'].values.astype(str).tolist()
+    graph2AY = tSumC[0].values.astype(int).tolist()
     #print(dfGroupC)
 
     # // Do Total sum operations for each party on Presidential (C)
-    dfGroupD = dfGroup2.loc[:,first_rejected_column2:first_C_column2]
-    dfGroupD = dfGroupD.drop(columns=[first_rejected_column2, first_C_column2])
-    dfGroupD = dfGroupD.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
-    dfGroupD = dfGroupD.apply(pd.to_numeric) # Converting all the string in the columns to integers
-    tSumD = dfGroupD.sum().reset_index() # Sum operation on a specific column
+    # dfGroupD = dfGroup2.loc[:,first_rejected_column2:first_C_column2]
+    # dfGroupD = dfGroupD.drop(columns=[first_rejected_column2, first_C_column2])
+    # dfGroupD = dfGroupD.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
+    # dfGroupD = dfGroupD.apply(pd.to_numeric) # Converting all the string in the columns to integers
+    # tSumD = dfGroupD.sum().reset_index() # Sum operation on a specific column
+    tSumD = total_valid_votes_parties(dfGroup2)
     tSumDParties = tSumD.sort_values(by=0, ascending=False)
-    graph2BXParties = tSumDParties['index']
-    graph2BYParties = tSumDParties[0]
-    graph2BX = tSumD['index']
-    graph2BY = tSumD[0]
+    graph2BXParties = tSumDParties['index'].values.astype(str).tolist()
+    graph2BYParties = tSumDParties[0].values.astype(int).tolist()
+    graph2BX = tSumD['index'].values.astype(str).tolist()
+    graph2BY = tSumD[0].values.astype(int).tolist()
     #print(graph2BX)
 
     # // Do the sum operations of each region on each party for both offices Parliament (D)
-    data = [dfRegions, dfGroupA]
-    dfMerge = pd.concat(data, axis=1, join='inner')
-    dfGroupG = dfMerge
-    df_cleanmodified = dfGroupG.loc[:, ~dfGroupG.columns.duplicated()]
-    df_clean = df_cleanmodified.copy()
+    # data = [dfRegions, dfGroupA]
+    # dfMerge = pd.concat(data, axis=1, join='inner')
+    # dfGroupG = dfMerge
+    # df_cleanmodified = dfGroupG.loc[:, ~dfGroupG.columns.duplicated()]
+    # df_clean = df_cleanmodified.copy()
 
-    #Ensuring column types are numeric where needed (for summing)
-    numeric_columns = df_clean.columns[1:]  # Adjusting this to my actual range of numeric columns
-    df_clean[numeric_columns] = df_clean[numeric_columns].apply(pd.to_numeric, errors='coerce')
-    #dfGroupG = dfGroupG.apply(pd.to_numeric)
-    df_grouped3 = df_clean.groupby(by="RegName")[numeric_columns].sum().reset_index()
-    #print(df_grouped3)
+    # #Ensuring column types are numeric where needed (for summing)
+    # numeric_columns = df_clean.columns[1:]  # Adjusting this to my actual range of numeric columns
+    # df_clean[numeric_columns] = df_clean[numeric_columns].apply(pd.to_numeric, errors='coerce')
+    # #dfGroupG = dfGroupG.apply(pd.to_numeric)
+    # df_grouped3 = df_clean.groupby(by="RegName")[numeric_columns].sum().reset_index()
+    # #print(df_grouped3)
 
-    first_rejected_column3 = df_grouped3.columns[df_grouped3.columns.str.contains('rejected')][0]
+    # first_rejected_column3 = df_grouped3.columns[df_grouped3.columns.str.contains('rejected')][0]
 
-    graph3AY = df_grouped3.loc[:,first_rejected_column3:]
-    graph3AY = graph3AY.drop(columns=first_rejected_column3)
-    #print(graph3AY)
-    graph3AYes = graph3AY
+    # graph3AY = df_grouped3.loc[:,first_rejected_column3:]
+    # graph3AY = graph3AY.drop(columns=first_rejected_column3)
+    # #print(graph3AY)
+    # graph3AYes = graph3AY
 
-    #print(graph3AYes)
+    # #print(graph3AYes)
 
-    graph3AY = graph3AY.values.tolist()
-    #print(graph3AY)
-    graph3AX = df_grouped3['RegName'].values.tolist()
-    df_grouped3z = df_grouped3.drop(columns=['rejected_votes','valid_votes'])
-    df_grouped3z.fillna(0, inplace=True) 
-    df_grouped3z = df_grouped3z.values.tolist()
-    # b = df_grouped3
+    # graph3AY = graph3AY.values.tolist()
+    # #print(graph3AY)
+    # graph3AX = df_grouped3['RegName'].values.tolist()
+    # df_grouped3z = df_grouped3.drop(columns=['rejected_votes','valid_votes'])
+    # df_grouped3z.fillna(0, inplace=True) 
+    # df_grouped3z = df_grouped3z.values.tolist()
+    # # b = df_grouped3
 
 
-    # Add a new 'values' column containing the highest value for each region
-    df_grouped3['Values'] = graph3AYes.apply(max, axis=1)
-    #print('Values', df_grouped3)
-    #print('Values', df_grouped3[numeric_columns])
+    # # Add a new 'values' column containing the highest value for each region
+    # df_grouped3['Values'] = graph3AYes.apply(max, axis=1)
+    # #print('Values', df_grouped3)
+    # #print('Values', df_grouped3[numeric_columns])
 
-    # Find the second highest value in each row
-    df_grouped3['Second_Highest_Value'] = graph3AYes.apply(lambda row: sorted(row)[-2], axis=1)
-    #print('Second_Highest_Value', df_grouped3)
+    # # Find the second highest value in each row
+    # df_grouped3['Second_Highest_Value'] = graph3AYes.apply(lambda row: sorted(row)[-2], axis=1)
+    # #print('Second_Highest_Value', df_grouped3)
 
-    # Create a new column "Winners" with the name of the column having the maximum value
-    df_grouped3['Winner'] = graph3AYes.idxmax(axis=1)
-    #print('Winner', df_grouped3)
-    #print(df_grouped3)
+    # # Create a new column "Winners" with the name of the column having the maximum value
+    # df_grouped3['Winner'] = graph3AYes.idxmax(axis=1)
+    # #print('Winner', df_grouped3)
+    # #print(df_grouped3)
 
-     # Find the name associated with the second highest value in each row
-    df_grouped3['Second_Highest_Value_Name'] = graph3AYes.apply(lambda row: row.drop(row.idxmax()).idxmax(), axis=1)
-    #print('Second_Highest_Value_Name', df_grouped3)
-    # Find the total sum of values in each row
-    df_grouped3['Total'] = graph3AYes.sum(axis=1)
+    #  # Find the name associated with the second highest value in each row
+    # df_grouped3['Second_Highest_Value_Name'] = graph3AYes.apply(lambda row: row.drop(row.idxmax()).idxmax(), axis=1)
+    # #print('Second_Highest_Value_Name', df_grouped3)
+    # # Find the total sum of values in each row
+    # df_grouped3['Total'] = graph3AYes.sum(axis=1)
 
-    # Calculate the percentage of the highest value
-    df_grouped3['Winner_Percentage'] = (df_grouped3['Values'] / df_grouped3['Total'] * 100).round(2)
+    # # Calculate the percentage of the highest value
+    # df_grouped3['Winner_Percentage'] = (df_grouped3['Values'] / df_grouped3['Total'] * 100).round(2)
 
-    # Calculate the percentage of the second highest value
-    df_grouped3['Second_Highest_Percentage'] = (df_grouped3['Second_Highest_Value'] / df_grouped3['Total'] * 100).round(2)
+    # # Calculate the percentage of the second highest value
+    # df_grouped3['Second_Highest_Percentage'] = (df_grouped3['Second_Highest_Value'] / df_grouped3['Total'] * 100).round(2)
 
-    # Define a color mapping dictionary for each party
-    value_mapping = {'NPP': 10, 'NDC': 8, 'CPP': 5}
+    # # Define a color mapping dictionary for each party
+    # value_mapping = {'NPP': 10, 'NDC': 8, 'CPP': 5}
 
-    # Create a new 'colors' column based on the 'Winners' column
-    df_grouped3['Values_map'] = df_grouped3['Winner'].map(value_mapping)
+    # # Create a new 'colors' column based on the 'Winners' column
+    # df_grouped3['Values_map'] = df_grouped3['Winner'].map(value_mapping)
 
-    values_dict = df_grouped3.set_index("RegName")[["Values_map", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
+    # values_dict = df_grouped3.set_index("RegName")[["Values_map", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
+    
+    values_dict, df_grouped3z, graph3AX = total_valid_votes_parties_levelBased(dfRegions, dfGroupA, "RegName")
+    values_dict = prev_wins_reg('Parliamentary', values_dict)
 
+    #values_dict.info()
+    
+    
+    #print(values_dict)
 
     # // Do the sum operations of each region on each party for both offices Presidential (D)
-    data1 = [dfRegions2, dfGroupB]
-    dfMergeB = pd.concat(data1, axis=1, join='inner')
-    dfGroupE = dfMergeB
-    df_clean2modified = dfGroupE.loc[:, ~dfGroupE.columns.duplicated()]
-    df_clean2 = df_clean2modified.copy()
+    # data1 = [dfRegions2, dfGroupB]
+    # dfMergeB = pd.concat(data1, axis=1, join='inner')
+    # dfGroupE = dfMergeB
+    # df_clean2modified = dfGroupE.loc[:, ~dfGroupE.columns.duplicated()]
+    # df_clean2 = df_clean2modified.copy()
 
-    #Ensuring column types are numeric where needed (for summing)
-    numeric_columns2 = df_clean2.columns[1:]  # Adjusting this to my actual range of numeric columns
-    df_clean2[numeric_columns2] = df_clean2[numeric_columns2].apply(pd.to_numeric, errors='coerce')
-    #dfGroupE = dfGroupE
-    df_grouped4 = df_clean2.groupby(by="RegName")[numeric_columns2].sum().reset_index()
-    #print(df_grouped4)
-
-
-    first_rejected_column4 = df_grouped4.columns[df_grouped4.columns.str.contains('rejected')][0]
-
-    graph4AY = df_grouped4.loc[:,first_rejected_column4:]
-    graph4AY = graph4AY.drop(columns=first_rejected_column4)
-    #print(graph4AY)
-    graph4AYes = graph4AY
+    # #Ensuring column types are numeric where needed (for summing)
+    # numeric_columns2 = df_clean2.columns[1:]  # Adjusting this to my actual range of numeric columns
+    # df_clean2[numeric_columns2] = df_clean2[numeric_columns2].apply(pd.to_numeric, errors='coerce')
+    # #dfGroupE = dfGroupE
+    # df_grouped4 = df_clean2.groupby(by="RegName")[numeric_columns2].sum().reset_index()
+    # #print(df_grouped4)
 
 
+    # first_rejected_column4 = df_grouped4.columns[df_grouped4.columns.str.contains('rejected')][0]
 
-    graph3BY = df_grouped4.iloc[:,3:].values.tolist()
-    graph3BX = df_grouped4['RegName'].values.tolist()
-    df_grouped4z = df_grouped4.drop(columns=['rejected_votes','valid_votes'])
-    df_grouped4z.fillna(0, inplace=True) 
-    #print(df_grouped4z)
-    df_grouped4z = df_grouped4z.values.tolist()
+    # graph4AY = df_grouped4.loc[:,first_rejected_column4:]
+    # graph4AY = graph4AY.drop(columns=first_rejected_column4)
+    # #print(graph4AY)
+    # graph4AYes = graph4AY
+
+
+
+    # graph3BY = df_grouped4.iloc[:,3:].values.tolist()
+    # graph3BX = df_grouped4['RegName'].values.tolist()
+    # df_grouped4z = df_grouped4.drop(columns=['rejected_votes','valid_votes'])
+    # df_grouped4z.fillna(0, inplace=True) 
+    # #print(df_grouped4z)
+    # df_grouped4z = df_grouped4z.values.tolist()
     
 
-    # Add a new 'values' column containing the highest value for each region
-    df_grouped4['Values'] = graph4AYes.apply(max, axis=1)
+    # # Add a new 'values' column containing the highest value for each region
+    # df_grouped4['Values'] = graph4AYes.apply(max, axis=1)
 
-    # Find the second highest value in each row
-    df_grouped4['Second_Highest_Value'] = graph4AYes.apply(lambda row: sorted(row)[-2], axis=1)
+    # # Find the second highest value in each row
+    # df_grouped4['Second_Highest_Value'] = graph4AYes.apply(lambda row: sorted(row)[-2], axis=1)
 
-    df_grouped4['Winner'] = graph4AYes.idxmax(axis=1)
+    # df_grouped4['Winner'] = graph4AYes.idxmax(axis=1)
 
-     # Find the name associated with the second highest value in each row
-    df_grouped4['Second_Highest_Value_Name'] = graph4AYes.apply(lambda row: row.drop(row.idxmax()).idxmax(), axis=1)
+    #  # Find the name associated with the second highest value in each row
+    # df_grouped4['Second_Highest_Value_Name'] = graph4AYes.apply(lambda row: row.drop(row.idxmax()).idxmax(), axis=1)
 
-    # Find the total sum of values in each row
-    df_grouped4['Total'] = graph4AYes.sum(axis=1)
+    # # Find the total sum of values in each row
+    # df_grouped4['Total'] = graph4AYes.sum(axis=1)
 
-    # Calculate the percentage of the highest value
-    df_grouped4['Winner_Percentage'] = (df_grouped4['Values'] / df_grouped4['Total'] * 100).round(2)
+    # # Calculate the percentage of the highest value
+    # df_grouped4['Winner_Percentage'] = (df_grouped4['Values'] / df_grouped4['Total'] * 100).round(2)
 
-    # Calculate the percentage of the second highest value
-    df_grouped4['Second_Highest_Percentage'] = (df_grouped4['Second_Highest_Value'] / df_grouped4['Total'] * 100).round(2)
+    # # Calculate the percentage of the second highest value
+    # df_grouped4['Second_Highest_Percentage'] = (df_grouped4['Second_Highest_Value'] / df_grouped4['Total'] * 100).round(2)
 
-    # Define a color mapping dictionary for each party
-    value_mappings = {'NPP': 10, 'NDC': 8, 'CPP': 5}
+    # # Define a color mapping dictionary for each party
+    # value_mappings = {'NPP': 10, 'NDC': 8, 'CPP': 5}
 
-    # Create a new 'colors' column based on the 'Winners' column
-    df_grouped4['Values_map_4'] = df_grouped4['Winner'].map(value_mappings)
+    # # Create a new 'colors' column based on the 'Winners' column
+    # df_grouped4['Values_map_4'] = df_grouped4['Winner'].map(value_mappings)
 
-    values_dict4 = df_grouped4.set_index("RegName")[["Values_map_4", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
+    # values_dict4 = df_grouped4.set_index("RegName")[["Values_map_4", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
 
+    values_dict4, df_grouped4z, graph3BX = total_valid_votes_parties_levelBased(dfRegions2, dfGroupB, "RegName")
+    values_dict4 = prev_wins_reg('Presidential', values_dict4)
 
     # ---------------------------------
 
@@ -611,226 +952,244 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     # _________________________________
 
     # // Finding the Total VALID_VOTES Constituency on Parliament (A)
-    first_C_columnNew = dfGroupNew1.columns[dfGroupNew1.columns.str.contains('_C')][0]
-    first_rejected_columnNew = dfGroupNew1.columns[dfGroupNew1.columns.str.contains('rejected')][0]
-    first_rejected_columnNew1B = dfGroupNew1B.columns[dfGroupNew1B.columns.str.contains('rejected')][0]
+    # first_C_columnNew = dfGroupNew1.columns[dfGroupNew1.columns.str.contains('_C')][0]
+    # first_rejected_columnNew = dfGroupNew1.columns[dfGroupNew1.columns.str.contains('rejected')][0]
+    # first_rejected_columnNew1B = dfGroupNew1B.columns[dfGroupNew1B.columns.str.contains('rejected')][0]
 
-    dfGroupAC = dfGroupNew1.loc[:,electoral:first_C_columnNew]
-    dfGroupAC = dfGroupAC.drop(columns=first_C_columnNew)
-    dfGroupAC = dfGroupAC.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
-    dfGroupAC = dfGroupAC.apply(pd.to_numeric) # Converting all the string in the columns to integers
-    tSumR = dfGroupAC[electoral].values.sum() # Sum operation on a specific column
+    # dfGroupAC = dfGroupNew1.loc[:,electoral:first_C_columnNew]
+    # dfGroupAC = dfGroupAC.drop(columns=first_C_columnNew)
+    # dfGroupAC = dfGroupAC.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
+    # dfGroupAC = dfGroupAC.apply(pd.to_numeric) # Converting all the string in the columns to integers
+    dfGroupAC = total_valid_votes(dfGroupNew1)
+    #print(dfGroupAC)
+    tSumR = dfGroupAC[electoral].values.sum().astype(int).tolist() # Sum operation on a specific column
     #print(tSumR)
     
     
     # // Finding the Total VALID_VOTES Constituency on Presidential (A)
-    first_C_columnNew1B = dfGroupNew1B.columns[dfGroupNew1B.columns.str.contains('_C')][0]
-    dfGroupBC = dfGroupNew1B.loc[:,electoral:first_C_columnNew1B]
-    dfGroupBC = dfGroupBC.drop(columns=first_C_columnNew1B)
-    dfGroupBC =  dfGroupBC.replace(',','', regex=True)
-    dfGroupBC = dfGroupBC.apply(pd.to_numeric)
-    tSum2R = dfGroupBC[electoral].sum()
+    # first_C_columnNew1B = dfGroupNew1B.columns[dfGroupNew1B.columns.str.contains('_C')][0]
+    # dfGroupBC = dfGroupNew1B.loc[:,electoral:first_C_columnNew1B]
+    # dfGroupBC = dfGroupBC.drop(columns=first_C_columnNew1B)
+    # dfGroupBC =  dfGroupBC.replace(',','', regex=True)
+    # dfGroupBC = dfGroupBC.apply(pd.to_numeric)
+    dfGroupBC = total_valid_votes(dfGroupNew1B)
+    tSum2R = dfGroupBC[electoral].sum().astype(int).tolist()
     #print(tSum2R)
 
      # // Have a column holding the sum operations of each constituency based on each region(Ashanti)Parliament for both offices (B)
-    dfConst = dfGroupNew1[["ConstName", electoral]].copy()
-    dfConst[electoral] = dfConst[electoral].replace(',','', regex=True)
-    dfConst[electoral] = dfConst[electoral].astype('int')
-    dfConst = dfConst.sort_values(by=electoral, ascending=False)
+    # dfConst = dfGroupNew1[["ConstName", electoral]].copy()
+    # dfConst[electoral] = dfConst[electoral].replace(',','', regex=True)
+    # dfConst[electoral] = dfConst[electoral].astype('int')
+    # dfConst = dfConst.sort_values(by=electoral, ascending=False)
+    dfConst = total_valid_votes_levelBased(dfGroupNew1, 'ConstName')[0]
     graphSub1AX = dfConst['ConstName'].values.tolist()
     graphSub1AY = dfConst[electoral].values.tolist()
     #print(graphSub1AY)
     
     
     # // Have a column holding the sum operations of each constituency based on each region(Ashanti) Presidential for both offices (B)
-    dfConst1B = dfGroupNew1B[["ConstName", electoral]].copy()
-    dfConst1B[electoral] = dfConst1B[electoral].replace(',','', regex=True)
-    dfConst1B[electoral] = dfConst1B[electoral].astype('int')
-    dfConst1B = dfConst1B.sort_values(by=electoral, ascending=False)
+    # dfConst1B = dfGroupNew1B[["ConstName", electoral]].copy()
+    # dfConst1B[electoral] = dfConst1B[electoral].replace(',','', regex=True)
+    # dfConst1B[electoral] = dfConst1B[electoral].astype('int')
+    # dfConst1B = dfConst1B.sort_values(by=electoral, ascending=False)
+    dfConst1B = total_valid_votes_levelBased(dfGroupNew1B, 'ConstName')[0]
     graphSub1BX = dfConst1B['ConstName'].values.tolist()
     graphSub1BY = dfConst1B[electoral].values.tolist()
     # print(graphSub1AY)
 
     # // Do Total sum operations for each party on Parliament CONSTITUENCY (C)
-    dfGroupCP = dfGroupNew1.loc[:,first_rejected_columnNew:first_C_columnNew]
-    dfGroupCP = dfGroupCP.drop(columns=[first_rejected_columnNew, first_C_columnNew])
-    dfGroupCP = dfGroupCP.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
-    dfGroupCP = dfGroupCP.apply(pd.to_numeric) # Converting all the string in the columns to integers
-    tSumCP = dfGroupCP.sum().reset_index() # Sum operation on a specific column
-    graph2AXP = tSumCP['index'].tolist()
-    graph2AYP = tSumCP[0]
+    # dfGroupCP = dfGroupNew1.loc[:,first_rejected_columnNew:first_C_columnNew]
+    # dfGroupCP = dfGroupCP.drop(columns=[first_rejected_columnNew, first_C_columnNew])
+    # dfGroupCP = dfGroupCP.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
+    # dfGroupCP = dfGroupCP.apply(pd.to_numeric) # Converting all the string in the columns to integers
+    # tSumCP = dfGroupCP.sum().reset_index() # Sum operation on a specific column
+    tSumCP = total_valid_votes_parties(dfGroupNew1)
+    graph2AXP = tSumCP['index'].values.astype(str).tolist()
+    graph2AYP = tSumCP[0].values.astype(int).tolist()
     #print(graph2AXP)
     
     # // Do Total sum operations for each party on Presidential CONSTITUENCY (C)
-    dfGroupDP = dfGroupNew1B.loc[:,first_rejected_columnNew1B:first_C_columnNew1B]
-    dfGroupDP = dfGroupDP.drop(columns=[first_rejected_columnNew1B, first_C_columnNew1B])
-    dfGroupDP = dfGroupDP.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
-    dfGroupDP = dfGroupDP.apply(pd.to_numeric) # Converting all the string in the columns to integers
-    tSumDP = dfGroupDP.sum().reset_index() # Sum operation on a specific column
-    graph2BXP = tSumDP['index']
-    graph2BYP = tSumDP[0]
+    # dfGroupDP = dfGroupNew1B.loc[:,first_rejected_columnNew1B:first_C_columnNew1B]
+    # dfGroupDP = dfGroupDP.drop(columns=[first_rejected_columnNew1B, first_C_columnNew1B])
+    # dfGroupDP = dfGroupDP.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
+    # dfGroupDP = dfGroupDP.apply(pd.to_numeric) # Converting all the string in the columns to integers
+    # tSumDP = dfGroupDP.sum().reset_index() # Sum operation on a specific column
+    tSumDP = total_valid_votes_parties(dfGroupNew1B)
+    graph2BXP = tSumDP['index'].values.astype(str).tolist()
+    graph2BYP = tSumDP[0].values.astype(int).tolist()
     #print(graph2BXP)
     
     
     # // (D) Ashanti(Parliament) Do Total sum operations for each party on each constituency based on each region for both necessary offices (F) Parliament
-    dfGroup1A = dfGroupNew1.loc[:,electoral:first_C_columnNew]
-    dfGroup1A = dfGroup1A.drop(columns=first_C_columnNew)
-    dfGroup1A = dfGroup1A.loc[:,electoral:].replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
-    dfGroup1A = dfGroup1A.apply(pd.to_numeric) # Converting all the string in the columns to integers
-    dfConst = dfGroupNew1[["ConstName", "ConstCode", electoral]]
-    data1A = [dfConst, dfGroup1A]
-    dfMerge1A = pd.concat(data1A, axis=1, join='inner')
+    # dfGroup1A = dfGroupNew1.loc[:,electoral:first_C_columnNew]
+    # dfGroup1A = dfGroup1A.drop(columns=first_C_columnNew)
+    # dfGroup1A = dfGroup1A.loc[:,electoral:].replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
+    # dfGroup1A = dfGroup1A.apply(pd.to_numeric) # Converting all the string in the columns to integers
+    # #print('ME:',dfGroup1A)
+    # dfConst = dfGroupNew1[["ConstName", "ConstCode", electoral]]
+    dfConst = total_valid_votes_levelBased(dfGroupNew1, 'ConstName', 'ConstCode')[1]
+    #print(dfConst)
+    #print(dfConstZZ)
+    # data1A = [dfConst, dfGroup1A]
+    # dfMerge1A = pd.concat(data1A, axis=1, join='inner')
 
-    df_cleanCmodified = dfMerge1A.loc[:, ~dfMerge1A.columns.duplicated()]
-    df_cleanC = df_cleanCmodified.copy()
+    # df_cleanCmodified = dfMerge1A.loc[:, ~dfMerge1A.columns.duplicated()]
+    # df_cleanC = df_cleanCmodified.copy()
 
-    #print(df_cleanC)
+    # #print(df_cleanC)
 
-    #Ensuring column types are numeric where needed (for summing)
-    numeric_columnsC = df_cleanC.columns[2:]  # Adjusting this to my actual range of numeric columns
-    df_cleanC[numeric_columnsC] = df_cleanC[numeric_columnsC].apply(pd.to_numeric, errors='coerce')
-
-
-    # first_rejected_columnC = df_cleanC.columns[df_cleanC.columns.str.contains('rejected')][0]
-
-    # dfGroupG1A = df_cleanC.loc[:,first_rejected_columnC:]
-    # dfGroupG1A = dfGroupG1A.drop(columns=first_rejected_columnC)
+    # #Ensuring column types are numeric where needed (for summing)
+    # numeric_columnsC = df_cleanC.columns[2:]  # Adjusting this to my actual range of numeric columns
+    # df_cleanC[numeric_columnsC] = df_cleanC[numeric_columnsC].apply(pd.to_numeric, errors='coerce')
 
 
-    # #print(dfMerge1A)
-    # dfGroupG1A = dfGroupG1A.replace(',','', regex=True)
-    # dfGroupG1A = dfGroupG1A.apply(pd.to_numeric)
-    #df_grouped3_1A = df_cleanC.groupby(by="ConstCode")[numeric_columnsC].sum().reset_index()
-    #print(df_grouped3_1A)
+    # # first_rejected_columnC = df_cleanC.columns[df_cleanC.columns.str.contains('rejected')][0]
+
+    # # dfGroupG1A = df_cleanC.loc[:,first_rejected_columnC:]
+    # # dfGroupG1A = dfGroupG1A.drop(columns=first_rejected_columnC)
 
 
-    first_rejected_column3_1A = df_cleanC.columns[df_cleanC.columns.str.contains('rejected')][0]
-
-    graph4AY_3_1A = df_cleanC.loc[:,first_rejected_column3_1A:]
-    graph4AY_3_1A = graph4AY_3_1A.drop(columns=first_rejected_column3_1A)
-    #print(graph4AY)
-    graph4AYes_3_1A = graph4AY_3_1A
-
+    # # #print(dfMerge1A)
+    # # dfGroupG1A = dfGroupG1A.replace(',','', regex=True)
+    # # dfGroupG1A = dfGroupG1A.apply(pd.to_numeric)
+    # #df_grouped3_1A = df_cleanC.groupby(by="ConstCode")[numeric_columnsC].sum().reset_index()
+    # #print(df_grouped3_1A)
 
 
+    # first_rejected_column3_1A = df_cleanC.columns[df_cleanC.columns.str.contains('rejected')][0]
 
-    graph3AY_1A = df_cleanC.iloc[:,4:]
-    #print(graph3AY_1A)
-    graph3AX_1A=df_cleanC.ConstName
-    df_grouped3zP = df_cleanC.drop(columns=['rejected_votes','valid_votes'])
-    df_grouped3zP.fillna(0, inplace=True)
-    #print(df_grouped3_1A)
-    df_grouped3zP = df_grouped3zP.values.tolist()
-    #print(df_grouped3_1A.CONSTITUENCY)
+    # graph4AY_3_1A = df_cleanC.loc[:,first_rejected_column3_1A:]
+    # graph4AY_3_1A = graph4AY_3_1A.drop(columns=first_rejected_column3_1A)
+    # #print(graph4AY)
+    # graph4AYes_3_1A = graph4AY_3_1A
 
-     # Add a new 'values' column containing the highest value for each region
-    df_cleanC['Values'] = graph4AYes_3_1A.apply(max, axis=1)
 
-    # Find the second highest value in each row
-    df_cleanC['Second_Highest_Value'] = graph4AYes_3_1A.apply(lambda row: sorted(row)[-2], axis=1)
 
-    df_cleanC['Winner'] = graph4AYes_3_1A.idxmax(axis=1)
 
-     # Find the name associated with the second highest value in each row
-    df_cleanC['Second_Highest_Value_Name'] = graph4AYes_3_1A.apply(lambda row: row.drop(row.idxmax()).idxmax(), axis=1)
+    # graph3AY_1A = df_cleanC.iloc[:,4:]
+    # #print(graph3AY_1A)
+    # graph3AX_1A=df_cleanC.ConstName
+    # df_grouped3zP = df_cleanC.drop(columns=['rejected_votes','valid_votes'])
+    # df_grouped3zP.fillna(0, inplace=True)
+    # #print(df_grouped3_1A)
+    # df_grouped3zP = df_grouped3zP.values.tolist()
+    # #print(df_grouped3_1A.CONSTITUENCY)
 
-    # Find the total sum of values in each row
-    df_cleanC['Total'] = graph4AYes_3_1A.sum(axis=1)
+    #  # Add a new 'values' column containing the highest value for each region
+    # df_cleanC['Values'] = graph4AYes_3_1A.apply(max, axis=1)
 
-    # Calculate the percentage of the highest value
-    df_cleanC['Winner_Percentage'] = (df_cleanC['Values'] / df_cleanC['Total'] * 100).round(2)
+    # # Find the second highest value in each row
+    # df_cleanC['Second_Highest_Value'] = graph4AYes_3_1A.apply(lambda row: sorted(row)[-2], axis=1)
 
-    # Calculate the percentage of the second highest value
-    df_cleanC['Second_Highest_Percentage'] = (df_cleanC['Second_Highest_Value'] / df_cleanC['Total'] * 100).round(2)
+    # df_cleanC['Winner'] = graph4AYes_3_1A.idxmax(axis=1)
 
-    value_mappingConstA = {'NPP': 10, 'NDC': 8, 'CPP': 5}
+    #  # Find the name associated with the second highest value in each row
+    # df_cleanC['Second_Highest_Value_Name'] = graph4AYes_3_1A.apply(lambda row: row.drop(row.idxmax()).idxmax(), axis=1)
 
-    # Create a new 'colors' column based on the 'Winners' column
-    df_cleanC['Values_map'] = df_cleanC['Winner'].map(value_mappingConstA)
-    #print(df_cleanC)
+    # # Find the total sum of values in each row
+    # df_cleanC['Total'] = graph4AYes_3_1A.sum(axis=1)
 
-    values_dictConstA = df_cleanC.set_index("ConstCode")[["ConstName", "Values_map", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
+    # # Calculate the percentage of the highest value
+    # df_cleanC['Winner_Percentage'] = (df_cleanC['Values'] / df_cleanC['Total'] * 100).round(2)
+
+    # # Calculate the percentage of the second highest value
+    # df_cleanC['Second_Highest_Percentage'] = (df_cleanC['Second_Highest_Value'] / df_cleanC['Total'] * 100).round(2)
+
+    # value_mappingConstA = {'NPP': 10, 'NDC': 8, 'CPP': 5}
+
+    # # Create a new 'colors' column based on the 'Winners' column
+    # df_cleanC['Values_map'] = df_cleanC['Winner'].map(value_mappingConstA)
+    # #print(df_cleanC)
+
+    # values_dictConstA = df_cleanC.set_index("ConstCode")[["ConstName", "Values_map", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
     #print(values_dictConstA)
-    
+
+    values_dictConstA, df_grouped3zP, graph3AX_1A = total_valid_votes_parties_levelBased(dfConst, dfGroupAC, "ConstName", "ConstCode")
+    values_dictConstA = prev_wins_const('Parliamentary', values_dictConstA)
+    #print(values_dictConstA)
+
     # // (D) Ashanti(Presidential) Do Total sum operations for each party on each constituency based on each region for both necessary offices (F) Presidential
-    dfGroup1B = dfGroupNew1B.loc[:,electoral:first_C_columnNew1B]
-    dfGroup1B = dfGroup1B.drop(columns=first_C_columnNew1B)
-    dfGroup1B = dfGroup1B.loc[:,electoral:].replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
-    dfGroup1B = dfGroup1B.apply(pd.to_numeric) # Converting all the string in the columns to integers
-    dfConstB = dfGroupNew1B[["ConstName", "ConstCode", electoral]]
-    data1B = [dfConstB, dfGroup1B]
-    dfMerge1B = pd.concat(data1B, axis=1, join='inner')
+    # dfGroup1B = dfGroupNew1B.loc[:,electoral:first_C_columnNew1B]
+    # dfGroup1B = dfGroup1B.drop(columns=first_C_columnNew1B)
+    # dfGroup1B = dfGroup1B.loc[:,electoral:].replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
+    # dfGroup1B = dfGroup1B.apply(pd.to_numeric) # Converting all the string in the columns to integers
+    # dfConstB = dfGroupNew1B[["ConstName", "ConstCode", electoral]]
+    dfConstB = total_valid_votes_levelBased(dfGroupNew1B, 'ConstName', 'ConstCode')[1]
+    # data1B = [dfConstB, dfGroup1B]
+    # dfMerge1B = pd.concat(data1B, axis=1, join='inner')
 
-    df_cleanC2modified = dfMerge1B.loc[:, ~dfMerge1B.columns.duplicated()]
-    df_cleanC2 = df_cleanC2modified.copy()
+    # df_cleanC2modified = dfMerge1B.loc[:, ~dfMerge1B.columns.duplicated()]
+    # df_cleanC2 = df_cleanC2modified.copy()
 
-    #Ensuring column types are numeric where needed (for summing)
-    numeric_columnsC2 = df_cleanC2.columns[2:]  # Adjusting this to my actual range of numeric columns
-    df_cleanC2[numeric_columnsC2] = df_cleanC2[numeric_columnsC2].apply(pd.to_numeric, errors='coerce')
-
-
-    # first_rejected_columnC2 = df_cleanC2.columns[df_cleanC2.columns.str.contains('rejected')][0]
-
-    # dfGroupG1B = df_cleanC2.loc[:,first_rejected_columnC2:]
-    # dfGroupG1B = dfGroupG1B.drop(columns=first_rejected_columnC2)
+    # #Ensuring column types are numeric where needed (for summing)
+    # numeric_columnsC2 = df_cleanC2.columns[2:]  # Adjusting this to my actual range of numeric columns
+    # df_cleanC2[numeric_columnsC2] = df_cleanC2[numeric_columnsC2].apply(pd.to_numeric, errors='coerce')
 
 
+    # # first_rejected_columnC2 = df_cleanC2.columns[df_cleanC2.columns.str.contains('rejected')][0]
 
-    # #print(df2)
-    # dfGroupG1B = dfGroupG1B.replace(',','', regex=True)
-    # dfGroupG1B = dfGroupG1B.apply(pd.to_numeric)
-    #df_cleanC2 = df_cleanC2.groupby(by="ConstCode")[numeric_columnsC2].sum().reset_index()
+    # # dfGroupG1B = df_cleanC2.loc[:,first_rejected_columnC2:]
+    # # dfGroupG1B = dfGroupG1B.drop(columns=first_rejected_columnC2)
 
 
 
-    first_rejected_column3_1B = df_cleanC2.columns[df_cleanC2.columns.str.contains('rejected')][0]
-
-    graph4AY_3_1B = df_cleanC2.loc[:,first_rejected_column3_1B:]
-    graph4AY_3_1B = graph4AY_3_1B.drop(columns=first_rejected_column3_1B)
-    #print(graph4AY)
-    graph4AYes_3_1B = graph4AY_3_1B
+    # # #print(df2)
+    # # dfGroupG1B = dfGroupG1B.replace(',','', regex=True)
+    # # dfGroupG1B = dfGroupG1B.apply(pd.to_numeric)
+    # #df_cleanC2 = df_cleanC2.groupby(by="ConstCode")[numeric_columnsC2].sum().reset_index()
 
 
 
+    # first_rejected_column3_1B = df_cleanC2.columns[df_cleanC2.columns.str.contains('rejected')][0]
 
-    graph3AY_1B = df_cleanC2.iloc[:,4:]
-    graph3AX_1B=df_cleanC2.ConstName
-    df_grouped3zP2 = df_cleanC2.drop(columns=['rejected_votes','valid_votes'])
-    df_grouped3zP2.fillna(0, inplace=True)
-    #print(df_grouped3zP2)
-    df_grouped3zP2 = df_grouped3zP2.values.tolist()
-    #print(df_grouped3_1B.CONSTITUENCY)
-
-     # Add a new 'values' column containing the highest value for each region
-    df_cleanC2['Values'] = graph4AYes_3_1B.apply(max, axis=1)
-
-    # Find the second highest value in each row
-    df_cleanC2['Second_Highest_Value'] = graph4AYes_3_1B.apply(lambda row: sorted(row)[-2], axis=1)
-
-    df_cleanC2['Winner'] = graph4AYes_3_1B.idxmax(axis=1)
-
-     # Find the name associated with the second highest value in each row
-    df_cleanC2['Second_Highest_Value_Name'] = graph4AYes_3_1B.apply(lambda row: row.drop(row.idxmax()).idxmax(), axis=1)
-
-    # Find the total sum of values in each row
-    df_cleanC2['Total'] = graph4AYes_3_1B.sum(axis=1)
-
-    # Calculate the percentage of the highest value
-    df_cleanC2['Winner_Percentage'] = (df_cleanC2['Values'] / df_cleanC2['Total'] * 100).round(2)
-
-    # Calculate the percentage of the second highest value
-    df_cleanC2['Second_Highest_Percentage'] = (df_cleanC2['Second_Highest_Value'] / df_cleanC2['Total'] * 100).round(2)
-
-    value_mappingConstB = {'NPP': 10, 'NDC': 8, 'CPP': 5}
-
-    # Create a new 'colors' column based on the 'Winners' column
-    df_cleanC2['Values_map'] = df_cleanC2['Winner'].map(value_mappingConstB)
-
-    values_dictConstB = df_cleanC2.set_index("ConstCode")[["ConstName", "Values_map", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
+    # graph4AY_3_1B = df_cleanC2.loc[:,first_rejected_column3_1B:]
+    # graph4AY_3_1B = graph4AY_3_1B.drop(columns=first_rejected_column3_1B)
+    # #print(graph4AY)
+    # graph4AYes_3_1B = graph4AY_3_1B
 
 
 
 
+    # graph3AY_1B = df_cleanC2.iloc[:,4:]
+    # graph3AX_1B=df_cleanC2.ConstName
+    # df_grouped3zP2 = df_cleanC2.drop(columns=['rejected_votes','valid_votes'])
+    # df_grouped3zP2.fillna(0, inplace=True)
+    # #print(df_grouped3zP2)
+    # df_grouped3zP2 = df_grouped3zP2.values.tolist()
+    # #print(df_grouped3_1B.CONSTITUENCY)
+
+    #  # Add a new 'values' column containing the highest value for each region
+    # df_cleanC2['Values'] = graph4AYes_3_1B.apply(max, axis=1)
+
+    # # Find the second highest value in each row
+    # df_cleanC2['Second_Highest_Value'] = graph4AYes_3_1B.apply(lambda row: sorted(row)[-2], axis=1)
+
+    # df_cleanC2['Winner'] = graph4AYes_3_1B.idxmax(axis=1)
+
+    #  # Find the name associated with the second highest value in each row
+    # df_cleanC2['Second_Highest_Value_Name'] = graph4AYes_3_1B.apply(lambda row: row.drop(row.idxmax()).idxmax(), axis=1)
+
+    # # Find the total sum of values in each row
+    # df_cleanC2['Total'] = graph4AYes_3_1B.sum(axis=1)
+
+    # # Calculate the percentage of the highest value
+    # df_cleanC2['Winner_Percentage'] = (df_cleanC2['Values'] / df_cleanC2['Total'] * 100).round(2)
+
+    # # Calculate the percentage of the second highest value
+    # df_cleanC2['Second_Highest_Percentage'] = (df_cleanC2['Second_Highest_Value'] / df_cleanC2['Total'] * 100).round(2)
+
+    # value_mappingConstB = {'NPP': 10, 'NDC': 8, 'CPP': 5}
+
+    # # Create a new 'colors' column based on the 'Winners' column
+    # df_cleanC2['Values_map'] = df_cleanC2['Winner'].map(value_mappingConstB)
+
+    # values_dictConstB = df_cleanC2.set_index("ConstCode")[["ConstName", "Values_map", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
+    #print(values_dictConstB)
+
+    values_dictConstB, df_grouped3zP2, graph3AX_1B = total_valid_votes_parties_levelBased(dfConstB, dfGroupBC, "ConstName", "ConstCode")
+    #print(values_dictConstB)
+    values_dictConstB = prev_wins_const('Presidential', values_dictConstB)
+    #print(values_dictConstB)
     #////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -842,11 +1201,14 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
 
      # // (D) Ashanti(Parliament) Do Total sum operations for each party on each constituency based on each region for both necessary offices (F) Parliament
+    first_C_column = dfGroup.columns[dfGroup.columns.str.contains('_C')][0]
+    first_rejected_column = dfGroup.columns[dfGroup.columns.str.contains('rejected')][0]
     dfGroup1ACONST2 = dfGroup.loc[:,electoral:first_C_column]
     dfGroup1ACONST2 = dfGroup1ACONST2.drop(columns=first_C_column)
     dfGroup1ACONST2 = dfGroup1ACONST2.loc[:,electoral:].replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
     dfGroup1ACONST2 = dfGroup1ACONST2.apply(pd.to_numeric) # Converting all the string in the columns to integers
     dfConstCONST2 = dfGroup[["ConstName", "ConstCode", electoral]]
+    #dfConstCONST2 = total_valid_votes_levelBased(dfGroup, 'ConstName', 'ConstCode')[1]
     data1ACONST2 = [dfConstCONST2, dfGroup1ACONST2]
     dfMerge1ACONST2 = pd.concat(data1ACONST2, axis=1, join='inner')
 
@@ -894,11 +1256,20 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     # Find the second highest value in each row
     df_cleanC2020['Second_Highest_Value'] = graph4AYes_3_1ACONST2.apply(lambda row: sorted(row)[-2], axis=1)
 
-    df_cleanC2020['Winner'] = graph4AYes_3_1ACONST2.idxmax(axis=1)
+    def assign_winner(row):
+        if row.isna().all() or (row == 0).all():  # Check if all values are NaN or 0
+            return "No winner"
+        else:
+            return row.idxmax()  # Return the party with the highest value (idxmax)
+
+    # Apply the function to each row in the DataFrame to assign the winner
+    df_cleanC2020['Winner'] = graph4AYes_3_1ACONST2.apply(assign_winner, axis=1)
+
+    #print(df_cleanC2020['Winner'].value_counts())
 
     # Counting the number of constituencies won by each party
     party_wins = df_cleanC2020['Winner'].value_counts()
-    #print(party_wins)
+    #print(df_cleanC2020)
     party_wins_dict = party_wins.to_dict()
 
     const_won_by_party = [{"name": party, "y": count} for party, count in party_wins_dict.items()]
@@ -915,7 +1286,17 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     #const_won_by_party_data = json.dumps(const_won_by_party)
 
      # Find the name associated with the second highest value in each row
-    df_cleanC2020['Second_Highest_Value_Name'] = graph4AYes_3_1ACONST2.apply(lambda row: row.drop(row.idxmax()).idxmax(), axis=1)
+    def assign_second_highest(row):
+        # Check for "No winner" condition (all values are NaN or 0)
+        if row.isna().all() or (row == 0).all():  # If all values are NaN or 0
+            return "No second place"
+        elif row.nunique() == 1:  # If all values are identical (no second place)
+            return "No second place"
+        else:
+            # Drop the max value and return the index of the second-highest
+            return row.drop(row.idxmax()).idxmax()
+
+    df_cleanC2020['Second_Highest_Value_Name'] = graph4AYes_3_1ACONST2.apply(assign_second_highest, axis=1)
 
     # Find the total sum of values in each row
     df_cleanC2020['Total'] = graph4AYes_3_1ACONST2.sum(axis=1)
@@ -926,6 +1307,9 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     # Calculate the percentage of the second highest value
     df_cleanC2020['Second_Highest_Percentage'] = (df_cleanC2020['Second_Highest_Value'] / df_cleanC2020['Total'] * 100).round(2)
 
+    # Replace NaN values with 'No winner'
+    df_cleanC2020['Second_Highest_Percentage'] = df_cleanC2020['Second_Highest_Percentage'].fillna(0)
+
     value_mappingConstACONST2 = {'NPP': 10, 'NDC': 8, 'CPP': 5}
 
     # Create a new 'colors' column based on the 'Winners' column
@@ -933,13 +1317,20 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     values_dictConstACONST2 = df_cleanC2020.set_index("ConstCode")[["ConstName", "Values_map", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
     
+    values_dictConstACONST2 = prev_wins_const('Parliamentary', values_dictConstACONST2)
+
+    
+    #values_dictConstACONST2ZZ = total_valid_votes_parties_levelBased(dfConstCONST2, dfGroupA, "ConstName", "ConstCode")[0]
     
     # // (D) Ashanti(Presidential) Do Total sum operations for each party on each constituency based on each region for both necessary offices (F) Presidential
+    first_C_column2 = dfGroup2.columns[dfGroup2.columns.str.contains('_C')][0]
+    first_rejected_column2 = dfGroup2.columns[dfGroup2.columns.str.contains('rejected')][0]
     dfGroup1BCONST2 = dfGroup2.loc[:,electoral:first_C_column2]
     dfGroup1BCONST2 = dfGroup1BCONST2.drop(columns=first_C_column2)
     dfGroup1BCONST2 = dfGroup1BCONST2.loc[:,electoral:].replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
     dfGroup1BCONST2 = dfGroup1BCONST2.apply(pd.to_numeric) # Converting all the string in the columns to integers
     dfConstBCONST2 = dfGroup2[["ConstName", "ConstCode", electoral]]
+    dfConst2ZZB = total_valid_votes_levelBased(dfGroup2, 'ConstName', 'ConstCode')[1]
     data1BCONST2 = [dfConstBCONST2, dfGroup1BCONST2]
     dfMerge1BCONST2 = pd.concat(data1BCONST2, axis=1, join='inner')
 
@@ -990,12 +1381,12 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     # Find the second highest value in each row
     df_cleanC2020B['Second_Highest_Value'] = graph4AYes_3_1BCONST2.apply(lambda row: sorted(row)[-2], axis=1)
 
-    df_cleanC2020B['Winner'] = graph4AYes_3_1BCONST2.idxmax(axis=1)
+    df_cleanC2020B['Winner'] = graph4AYes_3_1BCONST2.apply(assign_winner, axis=1)
 
 
     #print(df_cleanC2020B)
      # Find the name associated with the second highest value in each row
-    df_cleanC2020B['Second_Highest_Value_Name'] = graph4AYes_3_1BCONST2.apply(lambda row: row.drop(row.idxmax()).idxmax(), axis=1)
+    df_cleanC2020B['Second_Highest_Value_Name'] = graph4AYes_3_1BCONST2.apply(assign_second_highest, axis=1)
 
     # Find the total sum of values in each row
     df_cleanC2020B['Total'] = graph4AYes_3_1BCONST2.sum(axis=1)
@@ -1006,6 +1397,9 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     # Calculate the percentage of the second highest value
     df_cleanC2020B['Second_Highest_Percentage'] = (df_cleanC2020B['Second_Highest_Value'] / df_cleanC2020B['Total'] * 100).round(2)
 
+    # Replace NaN values with 'No winner'
+    df_cleanC2020B['Second_Highest_Percentage'] = df_cleanC2020B['Second_Highest_Percentage'].fillna(0)
+
     value_mappingConstBCONST2 = {'NPP': 10, 'NDC': 8, 'CPP': 5}
 
     # Create a new 'colors' column based on the 'Winners' column
@@ -1013,7 +1407,11 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     values_dictConstBCONST2 = df_cleanC2020B.set_index("ConstCode")[["ConstName", "Values_map", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
     #print(values_dictConstBCONST2)
+    #values_dictConstACONST2ZZB = total_valid_votes_parties_levelBased(dfConst2ZZB, dfGroupB, "ConstName", "ConstCode")[0]
 
+    values_dictConstBCONST2 = prev_wins_const('Presidential', values_dictConstBCONST2)
+
+    #print(values_dictConstACONST2ZZB)
     #global dfGroupH2
 
      #// List of the header columns
@@ -1023,17 +1421,17 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     dfGroupH5 = df.columns.tolist()[5:9]
     # print(dfGroupH2)
 
-    tSum = dfGroupA[electoral].values.sum().astype(int).tolist()
-    tSum2 = dfGroupB[electoral].values.sum().astype(int).tolist()
-    tSumR = dfGroupAC[electoral].values.sum().astype(int).tolist()
-    tSum2R = dfGroupBC[electoral].values.sum().astype(int).tolist() 
-    graph1AX = dfRegionsSum['RegName'].values.tolist()
-    graph1AY = dfRegionsSum[electoral].values.astype(int).tolist()
-    graphSub1AX = dfConst['ConstName'].values.tolist()
+    # tSum = dfGroupA[electoral].values.sum().astype(int).tolist()
+    # tSum2 = dfGroupB[electoral].values.sum().astype(int).tolist()
+    # tSumR = dfGroupAC[electoral].values.sum().astype(int).tolist()
+    # tSum2R = dfGroupBC[electoral].values.sum().astype(int).tolist() 
+    # graph1AX = dfRegionsSum['RegName'].values.tolist()
+    # graph1AY = dfRegionsSum[electoral].values.astype(int).tolist()
+    #graphSub1AX = dfConst['ConstName'].values.tolist()
     #graphSub1AY = dfConst['VALID_VOTES'].values.astype(int).tolist() 
-    graph1BX = dfRegionsSum2['RegName'].values.tolist()
-    graph1BY = dfRegionsSum2[electoral].values.astype(int).tolist()
-    graphSub1BX = dfConst1B['ConstName'].values.tolist()
+    # graph1BX = dfRegionsSum2['RegName'].values.tolist()
+    # graph1BY = dfRegionsSum2[electoral].values.astype(int).tolist()
+    #graphSub1BX = dfConst1B['ConstName'].values.tolist()
     #graphSub1BY = dfConst1B['VALID_VOTES'].values.astype(int).tolist()  
     graph2AX = tSumC['index'].values.astype(str).tolist()
     graph2AY = tSumC[0].values.astype(int).tolist()
@@ -1046,19 +1444,15 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     graph2BXP = tSumDP['index'].values.astype(str).tolist()
     graph2BYP = tSumDP[0].values.astype(int).tolist() 
     #graph3AY = df_grouped3.iloc[:,1:].values.astype(int).tolist()
-    graph3AX = df_grouped3['RegName'].values.tolist()
+    #graph3AX = df_grouped3['RegName'].values.tolist()
     #graph3BY = df_grouped4.iloc[:,1:].values.astype(int).tolist()
-    graph3BX = df_grouped4['RegName'].values.tolist()
+    #graph3BX = df_grouped4['RegName'].values.tolist()
     # gapa1AX = gapaSum['YEAR'].values.tolist()
     tSumCA = tSumC.values.tolist()
     tSumDA = tSumD.values.tolist()
     tSumCAP = tSumCP.values.tolist()
     tSumDAP = tSumDP.values.tolist()
 
-    GHMap2 = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions16.geojson'))
-    GHMap = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions.geojson'))
-    GHMapConst = gpd.read_file(os.path.join(data_loc_str, 'images', 'constituencies2020.geojson'))
-    GHMap_PS = gpd.read_file(os.path.join(data_loc_str, 'images', 'polling_stations.geojson'))
 
 
     # #_______________________________________
@@ -1118,18 +1512,41 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     merged_GHMap2Const = merged_GHMap2Const_json.to_json()
 
+    #__________________________________________
+
+    # #// Constituency Parliament year 2016 and below //
+
+
+    # #______________________________________
+
+
+
+    merged_GHMap2Const2_json = GHMapConst2.merge(values_dictConstA, left_on="ConstCode", right_index=True)
+
+    merged_GHMap2Const2 = merged_GHMap2Const2_json.to_json()
+
+
 
 
 
     #/////////////////////////////////////////////////////
 
-    # JUST 2020 CONSTIYUENCY INFORMATION PARLIAMENT
+    # JUST 2020 and ABOVE CONSTIYUENCY INFORMATION PARLIAMENT (NOT GRPUPED)
 
     merged_GHMap2Const_jsonCONST2 = GHMapConst.merge(values_dictConstACONST2, left_on="ConstCode", right_index=True)
 
     merged_GHMap2ConstCONST2 = merged_GHMap2Const_jsonCONST2.to_json()
 
     # print(merged_GHMap2ConstCONST2)
+
+
+    #/////////////////////////////////////////////////////
+
+    # JUST 2016 and BELOW CONSTIYUENCY INFORMATION PARLIAMENT (NOT GRPUPED)
+
+    merged_GHMap2Const_jsonCONST2_10 = GHMapConst2.merge(values_dictConstACONST2, left_on="ConstCode", right_index=True)
+
+    merged_GHMap2ConstCONST2_10 = merged_GHMap2Const_jsonCONST2_10.to_json()
 
 
     #/////////////////////////////////////////////////////
@@ -1145,6 +1562,18 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     merged2_GHMap2Const = merged2_GHMap2Const_json.to_json()
 
+
+    # #_______________________________________
+
+
+    # #// Constituency Presidential year 2016 and below //
+
+    # #_______________________________________
+
+    merged2_GHMap2Const2_json = GHMapConst2.merge(values_dictConstB, left_on="ConstCode", right_index=True)
+
+    merged2_GHMap2Const2 = merged2_GHMap2Const2_json.to_json()
+
     #print(values_dictConstB)
 
 
@@ -1152,11 +1581,19 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     #/////////////////////////////////////////////////////
 
-    # JUST 2020 CONSTIYUENCY INFORMATION PRESIDENTIAL
+    # JUST 2020 and ABOVE CONSTIYUENCY INFORMATION PRESIDENTIAL (NOT GROUPED)
 
     merged2_GHMap2Const_jsonCONST2 = GHMapConst.merge(values_dictConstBCONST2, left_on="ConstCode", right_index=True)
 
     merged2_GHMap2ConstCONST2 = merged2_GHMap2Const_jsonCONST2.to_json()
+
+
+
+    # JUST 2016 and BELOW CONSTIYUENCY INFORMATION PRESIDENTIAL (NOT GROUPED)
+
+    merged2_GHMap2Const_jsonCONST2_10 = GHMapConst2.merge(values_dictConstBCONST2, left_on="ConstCode", right_index=True)
+
+    merged2_GHMap2ConstCONST2_10 = merged2_GHMap2Const_jsonCONST2_10.to_json()
 
     #//////////////////////////////////////////////////////
 
@@ -1171,19 +1608,22 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     # FLASH_CONST ///
 
-    mergedFlashCONST_GHMap2_json = GHMapConst.merge(flash_CONSTdf2020_GROUPED_DONE, left_on="ConstCode", right_on="ConstCode")
+    # mergedFlashCONST_GHMap2_json = GHMapConst.merge(flash_CONSTdf2020_GROUPED_DONE, left_on="ConstCode", right_on="ConstCode")
 
-    mergedFlashCONST_GHMap2 = mergedFlashCONST_GHMap2_json.to_json()
+    # mergedFlashCONST_GHMap2 = mergedFlashCONST_GHMap2_json.to_json()
 
-    #print(mergedFlashCONST_GHMap2)
+    #print(mergedFlashCONST_GHMap2_json)
 
     #/////////////////////////////
 
-    # MERGING BASED ON CONSITUEN
+    # MERGING BASED ON NO GROUPING
 
-    mergedFlashCONST_GHMap2_jsonNew = GHMapConst.merge(flash_CONSTdf2020_GROUPED_DONE, left_on="Constituen", right_on="ConstName")
+    mergedFlashCONST_GHMap2_jsonNew = GHMapConst.merge(flash_CONSTdf, left_on="ConstCode", right_on="ConstCode")
 
     mergedFlashCONST_GHMap2New = mergedFlashCONST_GHMap2_jsonNew.to_json()
+
+
+    #print(mergedFlashCONST_GHMap2_jsonNew)
 
 
     # FLASH_PS /// 
@@ -1216,34 +1656,47 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     #_______________________________
 
+    def total_cencus(RegName):
+       dfGroupA2P = df3[[RegName, census]].copy() # Selecting specific columns and getting rid of the commas in the string
+       dfGroupA2P[census] = dfGroupA2P[census].astype('float')
+       tSum2P = dfGroupA2P[census].values.sum() # Sum operation on a specific column
+       dfContinentSum2P = dfGroupA2P.groupby(by=[RegName])[census].sum().reset_index()
+       dfContinentSum2P = dfContinentSum2P.sort_values(by=census, ascending=False)
+
+       return tSum2P, dfContinentSum2P
+
    # // Finding the Total Pop in relation to the Regions
-    dfGroupA2P = df3[["RegName", census]].copy() # Selecting specific columns and getting rid of the commas in the string
-    dfGroupA2P[census] = dfGroupA2P[census].astype('float') # Converting all the string in the columns to integers
-    tSum2P = dfGroupA2P[census].values.sum() # Sum operation on a specific column
-    dfContinentSum2P = dfGroupA2P.groupby(by=["RegName"])[census].sum().reset_index()
-    dfContinentSum2P = dfContinentSum2P.sort_values(by=census, ascending=False)
+    # dfGroupA2P = df3[["RegName", census]].copy() # Selecting specific columns and getting rid of the commas in the string
+    # dfGroupA2P[census] = dfGroupA2P[census].astype('float') # Converting all the string in the columns to integers
+    # tSum2P = dfGroupA2P[census].values.sum() # Sum operation on a specific column
+    tSum2P = total_cencus("RegName")[0].astype('float').tolist()
+    # dfContinentSum2P = dfGroupA2P.groupby(by=["RegName"])[census].sum().reset_index()
+    # dfContinentSum2P = dfContinentSum2P.sort_values(by=census, ascending=False)
+    dfContinentSum2P = total_cencus("RegName")[1]
     graph1AX2P = dfContinentSum2P['RegName'].values.tolist()
-    graph1AY2P = dfContinentSum2P[census]
+    graph1AY2P = dfContinentSum2P[census].values.tolist()
 
     # // Finding the Total Pop in relation to the Districts
-    dfGroupB2P = dfGroup2P[["ConstName", census]].copy() # Selecting specific columns and getting rid of the commas in the string
-    dfGroupB2P[census] = dfGroupB2P[census].astype('float') # Converting all the string in the columns to integers
-    tSumB2P = dfGroupB2P[census].values.sum() # Sum operation on a specific column
-    dfContinentSumB2P = dfGroupB2P.groupby(by=["ConstName"])[census].sum().reset_index()
-    dfContinentSumB2P = dfContinentSumB2P.sort_values(by=census, ascending=False)
+    # dfGroupB2P = dfGroup2P[["ConstName", census]].copy() # Selecting specific columns and getting rid of the commas in the string
+    # dfGroupB2P[census] = dfGroupB2P[census].astype('float') # Converting all the string in the columns to integers
+    # tSumB2P = dfGroupB2P[census].values.sum() # Sum operation on a specific column
+    tSumB2P = total_cencus("ConstName")[0].astype('float').tolist()
+    # dfContinentSumB2P = dfGroupB2P.groupby(by=["ConstName"])[census].sum().reset_index()
+    # dfContinentSumB2P = dfContinentSumB2P.sort_values(by=census, ascending=False)
+    dfContinentSumB2P = total_cencus("ConstName")[1]
     graph1BX2P = dfContinentSumB2P['ConstName'].values.tolist()
-    graph1BY2P = dfContinentSumB2P[census]
+    graph1BY2P = dfContinentSumB2P[census].values.tolist()
 
     #// List of the header columns
     dfGroupH = df3.columns.tolist()[8:-1]
     
-    tSum2P = dfGroupA2P[census].values.sum().astype('float').tolist()
-    graph1AX2P = dfContinentSum2P['RegName'].values.tolist()
-    graph1AY2P = dfContinentSum2P[census].values.tolist()
+    # tSum2P = dfGroupA2P[census].values.sum().astype('float').tolist()
+    # graph1AX2P = dfContinentSum2P['RegName'].values.tolist()
+    # graph1AY2P = dfContinentSum2P[census].values.tolist()
 
-    tSumB2P = dfGroupB2P[census].values.sum().astype('float').tolist()
-    graph1BX2P = dfContinentSumB2P['ConstName'].values.tolist()
-    graph1BY2P = dfContinentSumB2P[census].values.tolist()
+    # tSumB2P = dfGroupB2P[census].values.sum().astype('float').tolist()
+    # graph1BX2P = dfContinentSumB2P['ConstName'].values.tolist()
+    # graph1BY2P = dfContinentSumB2P[census].values.tolist()
 
  
     context = {
@@ -1275,9 +1728,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     'graph2BY' : graph2BY,
     'graph2BXP' : graph2BXP,
     'graph2BYP' : graph2BYP,
-    'graph3AY' : graph3AY,
     'graph3AX' : graph3AX,
-    'graph3BY' : graph3BY,
     'graph3BX' : graph3BX,
     'tSum2P' : tSum2P,
     'tSumB2P' : tSumB2P,
@@ -1306,7 +1757,11 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     'names' : names,
     'count_y' : count_y,
     'graph2BXParties' : graph2BXParties,
-    'graph2BYParties' : graph2BYParties
+    'graph2BYParties' : graph2BYParties,
+    'merged_GHMap2Const2' : merged_GHMap2Const2,
+    'merged2_GHMap2Const2' : merged2_GHMap2Const2,
+    'merged_GHMap2ConstCONST2_10' : merged_GHMap2ConstCONST2_10,
+    'merged2_GHMap2ConstCONST2_10' : merged2_GHMap2ConstCONST2_10,
     
     }
 
@@ -1336,7 +1791,7 @@ def update_charts(request):
     selected_electoral = request.GET.get('electoral')
 
     # Generate a unique cache key based on the filter parameters
-    cache_key = f"data_{selected_year}_{selected_region}_{selected_census}_{selected_electoral}"
+    cache_key = f"data_{selected_year}_{selected_region}_{selected_census}_{selected_electoral}".replace(" ", "_")
 
     # Check if data is already cached
     data = cache.get(cache_key)
@@ -1421,7 +1876,7 @@ def selectCensus(request):
     region = request.GET.get('region')
 
     # Generate a unique cache key based on the filter parameters
-    cache_key = f"data_{year}_{region}_{census}"
+    cache_key = f"data_{year}_{region}_{census}".replace(" ", "_")
 
     # Check if data is already cached
     data = cache.get(cache_key)
@@ -1435,20 +1890,33 @@ def selectCensus(request):
         grouped2P = df3.groupby(['RegName'])
         dfGroup2P = grouped2P.get_group(region) 
 
+        def total_cencus(RegName):
+           dfGroupA2P = df3[[RegName, census]].copy() # Selecting specific columns and getting rid of the commas in the string
+           dfGroupA2P[census] = dfGroupA2P[census].astype('float')
+           tSum2P = dfGroupA2P[census].values.sum() # Sum operation on a specific column
+           dfContinentSum2P = dfGroupA2P.groupby(by=[RegName])[census].sum().reset_index()
+           dfContinentSum2P = dfContinentSum2P.sort_values(by=census, ascending=False)
+
+           return tSum2P, dfContinentSum2P
+
         # POPULATION DATA PROCESSING
-        dfGroupA2P = df3[["RegName", census]].copy()
-        dfGroupA2P[census] = dfGroupA2P[census].astype('float')
-        tSum2P = dfGroupA2P[census].values.sum()
-        dfContinentSum2P = dfGroupA2P.groupby(by=["RegName"])[census].sum().reset_index()
-        dfContinentSum2P = dfContinentSum2P.sort_values(by=census, ascending=False)
+        # dfGroupA2P = df3[["RegName", census]].copy()
+        # dfGroupA2P[census] = dfGroupA2P[census].astype('float')
+        # tSum2P = dfGroupA2P[census].values.sum()
+        tSum2P = total_cencus("RegName")[0].astype('float').tolist()
+        # dfContinentSum2P = dfGroupA2P.groupby(by=["RegName"])[census].sum().reset_index()
+        # dfContinentSum2P = dfContinentSum2P.sort_values(by=census, ascending=False)
+        dfContinentSum2P = total_cencus("RegName")[1]
         graph1AX2P = dfContinentSum2P['RegName'].values.tolist()
         graph1AY2P = dfContinentSum2P[census].values.tolist()
 
-        dfGroupB2P = dfGroup2P[["ConstName", census]].copy()
-        dfGroupB2P[census] = dfGroupB2P[census].astype('float')
-        tSumB2P = dfGroupB2P[census].values.sum()
-        dfContinentSumB2P = dfGroupB2P.groupby(by=["ConstName"])[census].sum().reset_index()
-        dfContinentSumB2P = dfContinentSumB2P.sort_values(by=census, ascending=False)
+        # dfGroupB2P = dfGroup2P[["ConstName", census]].copy()
+        # dfGroupB2P[census] = dfGroupB2P[census].astype('float')
+        # tSumB2P = dfGroupB2P[census].values.sum()
+        tSumB2P = total_cencus("ConstName")[0].astype('float').tolist()
+        # dfContinentSumB2P = dfGroupB2P.groupby(by=["ConstName"])[census].sum().reset_index()
+        # dfContinentSumB2P = dfContinentSumB2P.sort_values(by=census, ascending=False)
+        dfContinentSumB2P = total_cencus("ConstName")[1]
         graph1BX2P = dfContinentSumB2P['ConstName'].values.tolist()
         graph1BY2P = dfContinentSumB2P[census].values.tolist()
 
@@ -1489,7 +1957,7 @@ def selectElectoral1(request):
     region = request.GET.get('region')
 
     # Generate a unique cache key based on the filter parameters
-    cache_key = f"data_{year}_{region}_{electoral}"
+    cache_key = f"data_{year}_{region}_{electoral}".replace(" ", "_")
 
     # Check if data is already cached
     data = cache.get(cache_key)
@@ -1529,43 +1997,64 @@ def selectElectoral1(request):
         # graph1AX = dfRegionsSum['RegName'].values.tolist()
         # graph1AY = dfRegionsSum[electoral].values.astype(int).tolist()
 
+        def total_valid_votes_levelBased(dfGroupNew1):
+            dfConst = dfGroupNew1[["ConstName", electoral]].copy()
+            dfConst[electoral] = dfConst[electoral].replace(',','', regex=True)
+            dfConst[electoral] = dfConst[electoral].astype('int')
+            dfConst = dfConst.sort_values(by=electoral, ascending=False)
 
-        dfConst = dfGroupNew1[["ConstName", electoral]].copy()
-        dfConst[electoral] = dfConst[electoral].replace(',','', regex=True)
-        dfConst[electoral] = dfConst[electoral].astype('int')
-        dfConst = dfConst.sort_values(by=electoral, ascending=False)
+            return dfConst
+
+        def total_valid_votes_levelBased2(dfGroupNew1):
+            first_C_column1 = dfGroupNew1.columns[dfGroupNew1.columns.str.contains('_C')][0]
+            dfGroupCP = dfGroupNew1.loc[:,'NPP':first_C_column1]
+            dfGroupCP = dfGroupCP.drop(columns=first_C_column1)
+            dfGroupCP = dfGroupCP.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
+            dfGroupCP = dfGroupCP.apply(pd.to_numeric) # Converting all the string in the columns to integers
+            tSumCP = dfGroupCP.sum().reset_index()
+
+            return tSumCP
+
+        # dfConst = dfGroupNew1[["ConstName", electoral]].copy()
+        # dfConst[electoral] = dfConst[electoral].replace(',','', regex=True)
+        # dfConst[electoral] = dfConst[electoral].astype('int')
+        # dfConst = dfConst.sort_values(by=electoral, ascending=False)
+        dfConst = total_valid_votes_levelBased(dfGroupNew1)
         graphSub1AX = dfConst['ConstName'].values.tolist()
         graphSub1AY = dfConst[electoral].values.astype(int).tolist()
 
 
 
-        dfConst1B = dfGroupNew1B[["ConstName", electoral]].copy()
-        dfConst1B[electoral] = dfConst1B[electoral].replace(',','', regex=True)
-        dfConst1B[electoral] = dfConst1B[electoral].astype('int')
-        dfConst1B = dfConst1B.sort_values(by=electoral, ascending=False)
+        # dfConst1B = dfGroupNew1B[["ConstName", electoral]].copy()
+        # dfConst1B[electoral] = dfConst1B[electoral].replace(',','', regex=True)
+        # dfConst1B[electoral] = dfConst1B[electoral].astype('int')
+        # dfConst1B = dfConst1B.sort_values(by=electoral, ascending=False)
+        dfConst1B = total_valid_votes_levelBased(dfGroupNew1B)
         graphSub1BX = dfConst1B['ConstName'].values.tolist()
         graphSub1BY = dfConst1B[electoral].values.astype(int).tolist()
 
 
 
         # // Do Total sum operations for each party on Parliament CONSTITUENCY (C)
-        first_C_column1 = dfGroupNew1.columns[dfGroupNew1.columns.str.contains('_C')][0]
-        dfGroupCP = dfGroupNew1.loc[:,'NPP':first_C_column1]
-        dfGroupCP = dfGroupCP.drop(columns=first_C_column1)
-        dfGroupCP = dfGroupCP.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
-        dfGroupCP = dfGroupCP.apply(pd.to_numeric) # Converting all the string in the columns to integers
-        tSumCP = dfGroupCP.sum().reset_index() # Sum operation on a specific column
+        # first_C_column1 = dfGroupNew1.columns[dfGroupNew1.columns.str.contains('_C')][0]
+        # dfGroupCP = dfGroupNew1.loc[:,'NPP':first_C_column1]
+        # dfGroupCP = dfGroupCP.drop(columns=first_C_column1)
+        # dfGroupCP = dfGroupCP.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
+        # dfGroupCP = dfGroupCP.apply(pd.to_numeric) # Converting all the string in the columns to integers
+        # tSumCP = dfGroupCP.sum().reset_index() # Sum operation on a specific column
+        tSumCP = total_valid_votes_levelBased2(dfGroupNew1)
         graph2AXP = tSumCP['index'].tolist()
         graph2AYP = tSumCP[0]
         
         
         # // Do Total sum operations for each party on Presidential CONSTITUENCY (C)
-        first_C_column1B = dfGroupNew1B.columns[dfGroupNew1B.columns.str.contains('_C')][0]
-        dfGroupDP = dfGroupNew1B.loc[:,'NPP':first_C_column1B]
-        dfGroupDP = dfGroupDP.drop(columns=first_C_column1B)
-        dfGroupDP = dfGroupNew1B.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
-        dfGroupDP = dfGroupDP.apply(pd.to_numeric) # Converting all the string in the columns to integers
-        tSumDP = dfGroupDP.sum().reset_index() # Sum operation on a specific column
+        # first_C_column1B = dfGroupNew1B.columns[dfGroupNew1B.columns.str.contains('_C')][0]
+        # dfGroupDP = dfGroupNew1B.loc[:,'NPP':first_C_column1B]
+        # dfGroupDP = dfGroupDP.drop(columns=first_C_column1B)
+        # dfGroupDP = dfGroupNew1B.replace(',','', regex=True) # Selecting specific columns and getting rid of the commas in the string
+        # dfGroupDP = dfGroupDP.apply(pd.to_numeric) # Converting all the string in the columns to integers
+        # tSumDP = dfGroupDP.sum().reset_index() # Sum operation on a specific column
+        tSumDP = total_valid_votes_levelBased2(dfGroupNew1B)
         graph2BXP = tSumDP['index']
         graph2BYP = tSumDP[0]
 

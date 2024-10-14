@@ -371,27 +371,46 @@ textarea{
 }
 #watermark-container {
     position: absolute; 
-    top: 350px; 
+    top: 50vh; 
     left: 130px; 
     z-index: 1000;
 }
 #watermark-container2 {
     position: absolute; 
-    top: 320px; 
+    top: 50vh; 
     left: 133px; 
     z-index: 1000;
 }
 .watermark {
+    font-size: small;
     opacity: 1; 
     color: #d68d33;
 }
-.watermark2 {
-    position: relative;
-    opacity: 1; 
-    color: #d68d33; 
-    font-size: small;
-    margin-bottom: 15px;
-    left: 19px;
+
+.leaflet-pane {
+    margin-top: 22px;
+}
+
+#but11 {
+    position: absolute; 
+    z-index: 1000; 
+    font-size: xx-small; 
+    top: 50vh; 
+    left: 12px;
+}
+#but22 {
+    position: absolute; 
+    z-index: 1000; 
+    font-size: xx-small; 
+    top: 50vh; 
+    left: 52px;
+}
+#but33 {
+    position: absolute;
+    z-index: 1000;
+    font-size: xx-small;
+    top: 50vh;
+    left: 92px;
 }
 
 @media screen and (max-width: 600px)
@@ -589,6 +608,15 @@ textarea{
     position: relative;
     left: 112px;
     margin-bottom: 19px;
+    }
+    #but11 {
+        top: 50vh;
+    }
+    #but22 {
+        top: 50vh;
+    }
+    #but33 {
+        top: 50vh;
     }
 
     
@@ -843,6 +871,15 @@ textarea{
     }
     .pp2 {
         width: 4vw;
+    }
+    #but11 {
+        top: 50vh;
+    }
+    #but22 {
+        top: 50vh;
+    }
+    #but33 {
+        top: 50vh;
     }
 
 
