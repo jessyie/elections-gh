@@ -270,7 +270,7 @@ GHMap_PS = gpd.read_file(os.path.join(data_loc_str, 'images', 'polling_stations.
     # dfGroupNew1 = groupedNewA.get_group((year, 'Parliament', region))
     # dfGroupNew1B = groupedNewA.get_group((year, 'Presidential First Round', region))
 
-def initialise_chart(year = '2020', region='Northern', census='Total_Pop', electoral='valid_votes'):
+def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electoral='valid_votes'):
 
     # FLASH DATA
 
@@ -355,6 +355,10 @@ def initialise_chart(year = '2020', region='Northern', census='Total_Pop', elect
     first_C_column_df = df.columns[df.columns.str.contains('_C')][0]
 
     df = df.loc[:, 'ConstName': first_C_column_df]
+    # Fill all columns from 'rejected_votes' to just before 'first_C_column' with 0
+    df.loc[:, 'reg_voters':first_C_column_df] = df.loc[:, 'reg_voters':first_C_column_df].apply(
+        lambda col: col.fillna(0) if col.name != 'first_C_column' else col.fillna('No information provided')
+    )
 
     # df = df.astype({
     #     "Ward Number": "int8",
@@ -514,7 +518,7 @@ def initialise_chart(year = '2020', region='Northern', census='Total_Pop', elect
         dfRegions = dfGroup[columns].copy()
         
         # Clean the 'electoral' column by removing commas and converting it to an integer
-        dfRegions[electoral] = dfRegions[electoral].replace(',', '', regex=True).astype(int)
+        dfRegions[electoral] = dfRegions[electoral].replace(',', '', regex=True).fillna(0).astype(int)
         
         # Group by the `RegName` column and sum the 'electoral' values
         dfRegionsSum = dfRegions.groupby(by=[RegName])[electoral].sum().reset_index()
@@ -1245,7 +1249,8 @@ def initialise_chart(year = '2020', region='Northern', census='Total_Pop', elect
 
     graph3AY_1ACONST2 = df_cleanC2020.iloc[:,4:]
     graph3AX_1ACONST2=df_cleanC2020.ConstName
-    df_grouped3zPCONST2 = df_cleanC2020.drop(columns=['rejected_votes','valid_votes'])
+    columns_to_drop2020 = [col for col in ['rejected_votes', 'valid_votes'] if col in df_cleanC2020.columns]
+    df_grouped3zPCONST2 = df_cleanC2020.drop(columns=columns_to_drop2020)
     df_grouped3zPCONST2.fillna(0, inplace=True)
     df_grouped3zPCONST2 = df_grouped3zPCONST2.values.tolist()
     #print(df_grouped3_1A.CONSTITUENCY)
@@ -1370,7 +1375,8 @@ def initialise_chart(year = '2020', region='Northern', census='Total_Pop', elect
 
     graph3AY_1BCONST2 = df_cleanC2020B.iloc[:,4:]
     graph3AX_1BCONST2=df_cleanC2020B.ConstName
-    df_grouped3zP2CONST2 = df_cleanC2020B.drop(columns=['rejected_votes','valid_votes'])
+    columns_to_drop2020B = [col for col in ['rejected_votes', 'valid_votes'] if col in df_cleanC2020B.columns]
+    df_grouped3zP2CONST2 = df_cleanC2020B.drop(columns=columns_to_drop2020B)
     df_grouped3zP2CONST2.fillna(0, inplace=True)
 
     df_grouped3zP2CONST2 = df_grouped3zP2CONST2.values.tolist()
