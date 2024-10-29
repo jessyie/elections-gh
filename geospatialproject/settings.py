@@ -14,6 +14,7 @@ from pathlib import Path
 from decouple import config
 from dotenv import load_dotenv
 # Example: Increase timeout for Redis
+# RT
 import kombu
 from kombu import Exchange, Queue
 
