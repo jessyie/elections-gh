@@ -2,7 +2,8 @@ from django.urls import path
 # RT
 #from django.urls import path, re_path
 from . import views
-from . import consumers
+#RT
+# from . import consumers
 
 
 urlpatterns = [
