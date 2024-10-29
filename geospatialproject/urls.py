@@ -19,7 +19,7 @@ from django.urls import path, include
 
 
 urlpatterns = [
-    path('', include('sitemap.urls')),
     path('to-secret-admin/', admin.site.urls),
+    path('', include('sitemap.urls')),
     
 ]

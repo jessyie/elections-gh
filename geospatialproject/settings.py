@@ -13,6 +13,11 @@ import os
 from pathlib import Path
 from decouple import config
 from dotenv import load_dotenv
+# Example: Increase timeout for Redis
+import kombu
+from kombu import Exchange, Queue
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,7 +48,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'compressor',
-    'sitemap.apps.SitemapConfig'
+    'sitemap.apps.SitemapConfig',
+    # 'django_celery_results',
+    # 'django_celery_beat',
+    # 'channels'
 ]
 
 MIDDLEWARE = [
@@ -167,3 +175,35 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Celery Settings
+# Celery settings
+
+
+
+# RT
+# CELERY_BROKER_URL = 'redis://127.0.0.1:6379'  # Redis as the broker
+# CELERY_RESULT_BACKEND = 'django-db'
+# CELERY_ACCEPT_CONTENT = ['application/json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+# CELERY_TIMEZONE = 'Africa/Accra'
+
+# CELERY BEAT
+# RT
+# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+#CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}  # 1 hour
+#CELERY_TASK_RESULT_EXPIRES = 3600  # 1 hour
+
+# Django Channels settings
+# RT
+# ASGI_APPLICATION = 'geospatialproject.asgi.application'
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels_redis.core.RedisChannelLayer",
+#         "CONFIG": {
+#             "hosts": [("127.0.0.1", 6379)],
+#         },
+#     },
+# }

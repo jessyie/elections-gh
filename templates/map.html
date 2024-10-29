@@ -320,8 +320,8 @@
 
         </div>
         <div class="col-md-3" id="chart-container" style="margin-top: 10px">
-            <select id='censusSelection' class=btn-dark>
-                        <option id='censusOption' selected value="">POPULATION DEMOGRAPHICS</option>
+            <select id='censusSelection' class="btn-dark" style="font-size: 9px;border-style:solid;border-radius: 4px;">
+                        <option id='censusOption' selected value="">Population Demographics</option>
                         <option value="Total_Pop">Total Pop</option>
                         <option value="Percent_Male">Percent Male</option>
                         <option value="Percent_Female">Percent Female</option>
@@ -361,18 +361,16 @@
             </div>   
 
         </div>
-        <div class="col-md-3" id="chart-container" style="margin-top: 10px">
-            <select class="bt1 btn-dark" id="electoralSelection5">
-                <option value="valid_votes">Valid Votes Inactive</option>
-                <option value="reg_voters">Registered Voters</option>
-                <option value="votes_casted">Votes Casted</option>
-                <option value="rejected_votes">Rejected Votes</option>
-                <!-- {% for gH5 in dfGroupH5 %}
-                <option >{{gH5}}</option>
-                {% endfor %} -->
-
-            </select>
-            <div id="container3b"></div>
+        <div class="col-md-3" id="chart-container" style="margin-top: 23px">
+            <h5 style="font-size: 11px;"></h5>
+            <div class="card" id="container3b">
+              <div class="card-header">
+                Information Board
+              </div>
+              <ul class="list-group list-group-flush" id="card-content" style="max-height: 200px; overflow-y: auto;">
+                <li class="list-group-item" id="default-item">No selection from Map</li> <!-- Default content -->
+              </ul>
+              </div>
             <div id="watermark-container">
                 <p class="watermark">Geography @ KNUST</p>
             </div>   
@@ -431,4 +429,7 @@
 <div id='presidentialConst10' style = 'display:none;'>{{merged2_GHMap2Const2 | safe}}</div>
 <div id='parliamentConst16CONST2_10' style = 'display:none;'>{{merged_GHMap2ConstCONST2_10 | safe}}</div>
 <div id='presidentialConst16CONST2_10' style = 'display:none;'>{{merged2_GHMap2ConstCONST2_10 | safe}}</div>
+<div id='GHMap2_json' style = 'display:none;'>{{GHMap2_json | safe}}</div>
+<div id='GHMap_json' style = 'display:none;'>{{GHMap_json | safe}}</div>
+<div id='GHMap_PS_json' style = 'display:none;'>{{GHMap_PS_json | safe}}</div>
 {% endblock %}

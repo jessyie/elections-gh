@@ -242,9 +242,10 @@ GHMap2 = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions16.geo
 GHMap = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions.geojson'))
 GHMapConst = gpd.read_file(os.path.join(data_loc_str, 'images', 'constituencies2020.geojson'))
 GHMapConst2 = gpd.read_file(os.path.join(data_loc_str, 'images', 'constituencies2004_2008.geojson'))
-GHMap_PS = gpd.read_file(os.path.join(data_loc_str, 'images', 'polling_stations.geojson'))
-
-
+GHMap_PS = gpd.read_file(os.path.join(data_loc_str, 'images', 'new_ps', 'new_ps2', 'polling_stations.geojson'))
+GHMap_json = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions.geojson')).to_json()
+GHMap2_json = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions16.geojson')).to_json()
+GHMap_PS_json = gpd.read_file(os.path.join(data_loc_str, 'images', 'new_ps', 'new_ps2', 'polling_stations.geojson')).to_json()
 # print(f"This is df2:", df2)
 # print(f"This is df2a:", df2a)
 
@@ -271,6 +272,11 @@ GHMap_PS = gpd.read_file(os.path.join(data_loc_str, 'images', 'polling_stations.
     # dfGroupNew1B = groupedNewA.get_group((year, 'Presidential First Round', region))
 
 def initialise_chart(year = '2020', region='Northern', census='Total_Pop', electoral='valid_votes'):
+
+    # RT
+    # from .tasks import update_year_2024_data
+
+    # update_year_2024_data.delay()
 
     # FLASH DATA
 
@@ -356,6 +362,12 @@ def initialise_chart(year = '2020', region='Northern', census='Total_Pop', elect
 
     df = df.loc[:, 'ConstName': first_C_column_df]
 
+    # Fill all columns from 'rejected_votes' to just before 'first_C_column' with 0
+    df.loc[:, 'reg_voters':first_C_column_df] = df.loc[:, 'reg_voters':first_C_column_df].apply(
+        lambda col: col.fillna(0) if col.name != 'first_C_column' else col.fillna('No information provided')
+    )
+
+    #print(df)
     # df = df.astype({
     #     "Ward Number": "int8",
     #     "Voter ID": "int32",
@@ -514,7 +526,7 @@ def initialise_chart(year = '2020', region='Northern', census='Total_Pop', elect
         dfRegions = dfGroup[columns].copy()
         
         # Clean the 'electoral' column by removing commas and converting it to an integer
-        dfRegions[electoral] = dfRegions[electoral].replace(',', '', regex=True).astype(int)
+        dfRegions[electoral] = dfRegions[electoral].replace(',', '', regex=True).fillna(0).astype(int)
         
         # Group by the `RegName` column and sum the 'electoral' values
         dfRegionsSum = dfRegions.groupby(by=[RegName])[electoral].sum().reset_index()
@@ -568,7 +580,9 @@ def initialise_chart(year = '2020', region='Northern', census='Total_Pop', elect
         graph3AX = df_grouped3[RegName].values.tolist()
 
         # Clean and prepare data
-        df_grouped3z = df_grouped3.drop(columns=['rejected_votes', 'valid_votes'])
+        # Drop 'rejected_votes' and 'valid_votes' columns only if they exist
+        columns_to_drop = [col for col in ['rejected_votes', 'valid_votes'] if col in df_grouped3.columns]
+        df_grouped3z = df_grouped3.drop(columns=columns_to_drop)
         df_grouped3z.fillna(0, inplace=True)
         df_grouped3z = df_grouped3z.values.tolist()
 
@@ -1245,7 +1259,8 @@ def initialise_chart(year = '2020', region='Northern', census='Total_Pop', elect
 
     graph3AY_1ACONST2 = df_cleanC2020.iloc[:,4:]
     graph3AX_1ACONST2=df_cleanC2020.ConstName
-    df_grouped3zPCONST2 = df_cleanC2020.drop(columns=['rejected_votes','valid_votes'])
+    columns_to_drop2020 = [col for col in ['rejected_votes', 'valid_votes'] if col in df_cleanC2020.columns]
+    df_grouped3zPCONST2 = df_cleanC2020.drop(columns=columns_to_drop2020)
     df_grouped3zPCONST2.fillna(0, inplace=True)
     df_grouped3zPCONST2 = df_grouped3zPCONST2.values.tolist()
     #print(df_grouped3_1A.CONSTITUENCY)
@@ -1370,7 +1385,8 @@ def initialise_chart(year = '2020', region='Northern', census='Total_Pop', elect
 
     graph3AY_1BCONST2 = df_cleanC2020B.iloc[:,4:]
     graph3AX_1BCONST2=df_cleanC2020B.ConstName
-    df_grouped3zP2CONST2 = df_cleanC2020B.drop(columns=['rejected_votes','valid_votes'])
+    columns_to_drop2020B = [col for col in ['rejected_votes', 'valid_votes'] if col in df_cleanC2020B.columns]
+    df_grouped3zP2CONST2 = df_cleanC2020B.drop(columns=columns_to_drop2020B)
     df_grouped3zP2CONST2.fillna(0, inplace=True)
 
     df_grouped3zP2CONST2 = df_grouped3zP2CONST2.values.tolist()
@@ -1762,6 +1778,9 @@ def initialise_chart(year = '2020', region='Northern', census='Total_Pop', elect
     'merged2_GHMap2Const2' : merged2_GHMap2Const2,
     'merged_GHMap2ConstCONST2_10' : merged_GHMap2ConstCONST2_10,
     'merged2_GHMap2ConstCONST2_10' : merged2_GHMap2ConstCONST2_10,
+    'GHMap2_json': GHMap2_json,
+    'GHMap_json': GHMap_json,
+    'GHMap_PS_json': GHMap_PS_json,
     
     }
 
@@ -1785,6 +1804,12 @@ def my_routing(request):
 
 
 def update_charts(request):
+    
+    #RT
+    # from .tasks import update_year_2024_data
+
+    # update_year_2024_data.delay()
+
     selected_year = request.GET.get("year")
     selected_region = request.GET.get("region")
     selected_census = request.GET.get('census')
@@ -1829,11 +1854,11 @@ def update_charts(request):
         # elif selected_census and not selected_year and not selected_region and not selected_electoral:
         #     # Case 3: Filter by Census only
         #     data = initialise_chart(census=selected_census)
-        
+       
         # elif selected_electoral and not selected_year and not selected_region and not selected_census:
         #     # Case 4: Filter by Electoral only
         #     data = initialise_chart(electoral=selected_electoral)
-        
+      
         # # elif selected_year and selected_region and not selected_census and not selected_electoral:
         # #     # Combination: Year and Region
         # #     data = initialise_chart(year=selected_year, region=selected_region)

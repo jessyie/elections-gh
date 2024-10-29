@@ -129,6 +129,8 @@
   {% compress js %}
   <script type="text/javascript" src="{% static 'chartjs/chart.js' %}"></script>
   {% endcompress %}
+
+
 <!-- 
   <script type="text/javascript">
 window.onload = function() {
@@ -443,16 +445,7 @@ window.onload = function() {
         }
     },
       legend: {
-        layout: 'vertical',
-        align: 'right',
-        verticalAlign: 'top',
-        x: -40,
-        y: 30,
-        floating: true,
-        borderWidth: 1,
-        backgroundColor:
-        Highcharts.defaultOptions.legend.backgroundColor || '#FFFFFF',
-        shadow: true
+        enabled: false
       },
       credits: {
         enabled: false
@@ -571,16 +564,7 @@ window.onload = function() {
         }
     },
       legend: {
-        layout: 'vertical',
-        align: 'right',
-        verticalAlign: 'top',
-        x: -40,
-        y: 30,
-        floating: true,
-        borderWidth: 1,
-        backgroundColor:
-        Highcharts.defaultOptions.legend.backgroundColor || '#FFFFFF',
-        shadow: true
+        enabled: false
       },
       credits: {
         enabled: false
@@ -840,39 +824,39 @@ window.onload = function() {
     });
 
 
-    var colors = [
-          '#0390fc', 
-          '#e3051b', 
-          '#f75464', 
-          '#308a0a', 
-          '#9d0fbd', 
-          '#ded712', 
-          '#f02274', 
-          '#1f1cd9',
-          '#0390fc', 
-          '#e3051b', 
-          '#f75464', 
-          '#308a0a', 
-          '#9d0fbd', 
-          '#ded712', 
-          '#f02274', 
-          '#1f1cd9',
-          '#f75464',
-          '#ded712',
-          '#308a0a',
-          '#1eb39a',
-          '#46e5fa',
-          '#7a9c2c',
-          '#41423e',
-          '#d460eb',
-          '#d18f38',
-          '#f28907',
-          '#f77c9d',
-          '#8d76f5',
-          '#b58931',
-          '#ebd059'
+    // var colors = [
+    //       '#0390fc', 
+    //       '#e3051b', 
+    //       '#f75464', 
+    //       '#308a0a', 
+    //       '#9d0fbd', 
+    //       '#ded712', 
+    //       '#f02274', 
+    //       '#1f1cd9',
+    //       '#0390fc', 
+    //       '#e3051b', 
+    //       '#f75464', 
+    //       '#308a0a', 
+    //       '#9d0fbd', 
+    //       '#ded712', 
+    //       '#f02274', 
+    //       '#1f1cd9',
+    //       '#f75464',
+    //       '#ded712',
+    //       '#308a0a',
+    //       '#1eb39a',
+    //       '#46e5fa',
+    //       '#7a9c2c',
+    //       '#41423e',
+    //       '#d460eb',
+    //       '#d18f38',
+    //       '#f28907',
+    //       '#f77c9d',
+    //       '#8d76f5',
+    //       '#b58931',
+    //       '#ebd059'
 
-        ]
+    //     ]
 
     // const datum =  {{df_grouped3z | safe}};
 
@@ -983,115 +967,283 @@ window.onload = function() {
     //   }))
     // });
 
-    const datum2 =  {{df_grouped4z | safe}};
+    //const datum2 =  {{df_grouped4z | safe}};
 
 
     // Extract categories (first column) and column names (header row)
-    const categories2 = datum2.map(item => item[0]);
-    const columnNames2 = {{graph2BX | safe}};
+    // const categories2 = datum2.map(item => item[0]);
+    // const columnNames2 = {{graph2BX | safe}};
 
     // Extract series data (exclude the first row which contains column names)
-    const seriesData2 = datum2.slice(0).map(item => item.slice(1));
+    // const seriesData2 = datum2.slice(0).map(item => item.slice(1));
 
-    var chart3b = Highcharts.chart('container3b', {
-      chart: {
-        type: 'column',
-        style: {
-          fontSize: '15px'
-        }
-      },
-      title: {
-        text: 'Total Valid Votes for Each Political Party Per Region(Presidential)',
-        style: {
-          fontSize: '13px',
-          fontWeight: 'bold'
-        }
-      },
-      xAxis: {
-        categories: categories2,
-        scrollbar: {
-          enabled: false
-        },
-      },
-      yAxis: {
-        title: {
-          scrollbar: {
-          enabled: false
-        },
-          text: 'Valid Votes'
-        }
-      },
-      exporting: {
-        buttons: {
-            contextButton: {
-                menuItems: [
-                    'viewFullscreen',
-                    'printChart',
-                    'separator',
-                    'downloadPNG', // Keep the options you want to keep
-                    'downloadJPEG', // Keep the options you want to keep                    
-                    'downloadPDF', // Keep the options you want to keep
-                    'downloadSVG', // Keep the options you want to keep
-                    'separator',
-                    {
-                        text: 'Download CSV',
+    // var chart3b = Highcharts.chart('container3b', {
+    //   chart: {
+    //     type: 'column',
+    //     style: {
+    //       fontSize: '15px'
+    //     }
+    //   },
+    //   title: {
+    //     text: 'Total Valid Votes for Each Political Party Per Region(Presidential)',
+    //     style: {
+    //       fontSize: '13px',
+    //       fontWeight: 'bold'
+    //     }
+    //   },
+    //   xAxis: {
+    //     categories: categories2,
+    //     scrollbar: {
+    //       enabled: false
+    //     },
+    //   },
+    //   yAxis: {
+    //     title: {
+    //       scrollbar: {
+    //       enabled: false
+    //     },
+    //       text: 'Valid Votes'
+    //     }
+    //   },
+    //   exporting: {
+    //     buttons: {
+    //         contextButton: {
+    //             menuItems: [
+    //                 'viewFullscreen',
+    //                 'printChart',
+    //                 'separator',
+    //                 'downloadPNG', // Keep the options you want to keep
+    //                 'downloadJPEG', // Keep the options you want to keep                    
+    //                 'downloadPDF', // Keep the options you want to keep
+    //                 'downloadSVG', // Keep the options you want to keep
+    //                 'separator',
+    //                 {
+    //                     text: 'Download CSV',
                         
-                        // Custom onclick handler for the inactive item
-                        onclick: function () {
-                            // Do nothing or show a message indicating it's inactive
-                        },
-                        // Add a CSS class to style the inactive item
+    //                     // Custom onclick handler for the inactive item
+    //                     onclick: function () {
+    //                         // Do nothing or show a message indicating it's inactive
+    //                     },
+    //                     // Add a CSS class to style the inactive item
                         
 
-                    },
-                    {
-                        text: 'Download XLS',
+    //                 },
+    //                 {
+    //                     text: 'Download XLS',
 
-                        // Custom onclick handler for the inactive item
-                        onclick: function () {
-                            // Do nothing or show a message indicating it's inactive
-                        },
-                        // Add a CSS class to style the inactive item
-                        className: 'inactive-menu-item'
-                    },
-                    {
-                      text: 'View Data Table',
+    //                     // Custom onclick handler for the inactive item
+    //                     onclick: function () {
+    //                         // Do nothing or show a message indicating it's inactive
+    //                     },
+    //                     // Add a CSS class to style the inactive item
+    //                     className: 'inactive-menu-item'
+    //                 },
+    //                 {
+    //                   text: 'View Data Table',
 
-                      onclick: function() {
-                        if (this.dataTableDiv && this.dataTableDiv.style.display !== 'none') {
-                          this.dataTableDiv.style.display = 'none';
-                        } else {
-                          this.viewData();
-                          this.dataTableDiv.style.display = '';
-                        }
-                      },
+    //                   onclick: function() {
+    //                     if (this.dataTableDiv && this.dataTableDiv.style.display !== 'none') {
+    //                       this.dataTableDiv.style.display = 'none';
+    //                     } else {
+    //                       this.viewData();
+    //                       this.dataTableDiv.style.display = '';
+    //                     }
+    //                   },
                       
                     
-                    }
+    //                 }
                     
-                    ]
-            }
-        }
-    },
-      credits: {
-        enabled: false
-      },
-      tooltip: {
-        headerFormat: '<b>{point.x}</b><br/>',
-        pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
-      },
-      plotOptions: {
-        column: {
-          stacking: 'normal',
-        }
-      },
-      colors: this.colors,
-      series: columnNames2.map((columnName, index) => ({
-        name: columnName,
-        data: seriesData2.map(dataSeries => dataSeries[index]),
-        showInLegend: false,
-      }))
-    });
+    //                 ]
+    //         }
+    //     }
+    // },
+    //   credits: {
+    //     enabled: false
+    //   },
+    //   tooltip: {
+    //     headerFormat: '<b>{point.x}</b><br/>',
+    //     pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+    //   },
+    //   plotOptions: {
+    //     column: {
+    //       stacking: 'normal',
+    //     }
+    //   },
+    //   colors: this.colors,
+    //   series: columnNames2.map((columnName, index) => ({
+    //     name: columnName,
+    //     data: seriesData2.map(dataSeries => dataSeries[index]),
+    //     showInLegend: false,
+    //   }))
+    // });
+
+//   // Default information when no feature is clicked
+//   var defaultInfo = [
+//       ['Default Property 1', 'Default Value 1'],
+//       ['Default Property 2', 'Default Value 2'],
+//       ['Default Property 3', 'Default Value 3']
+//   ];
+
+//   var chart3b = Highcharts.chart('container3b', {
+//     chart: {
+//         type: 'column'
+//     },
+//     title: {
+//         text: 'Feature Tooltip Data'
+//     },
+//     xAxis: {
+//         type: 'category',
+//         title: {
+//             text: 'Property Name'
+//         }
+//     },
+//     yAxis: {
+//         title: {
+//             text: 'Value'
+//         }
+//     },
+//     exporting: {
+//         buttons: {
+//             contextButton: {
+//                 menuItems: [
+//                     'viewFullscreen',
+//                     'printChart',
+//                     'separator',
+//                     'downloadPNG', // Keep the options you want to keep
+//                     'downloadJPEG', // Keep the options you want to keep                    
+//                     'downloadPDF', // Keep the options you want to keep
+//                     'downloadSVG', // Keep the options you want to keep
+//                     'separator',
+//                     {
+//                         text: 'Download CSV',
+                        
+//                         // Custom onclick handler for the inactive item
+//                         onclick: function () {
+//                             // Do nothing or show a message indicating it's inactive
+//                         },
+//                         // Add a CSS class to style the inactive item
+                        
+
+//                     },
+//                     {
+//                         text: 'Download XLS',
+
+//                         // Custom onclick handler for the inactive item
+//                         onclick: function () {
+//                             // Do nothing or show a message indicating it's inactive
+//                         },
+//                         // Add a CSS class to style the inactive item
+//                         className: 'inactive-menu-item'
+//                     },
+//                     {
+//                       text: 'View Data Table',
+
+//                       onclick: function() {
+//                         if (this.dataTableDiv && this.dataTableDiv.style.display !== 'none') {
+//                           this.dataTableDiv.style.display = 'none';
+//                         } else {
+//                           this.viewData();
+//                           this.dataTableDiv.style.display = '';
+//                         }
+//                       },
+                      
+                    
+//                     }
+                    
+//                     ]
+//             }
+//         }
+//     },
+//     series: [{
+//         name: 'Tooltip Data',
+//         data: defaultInfo  // Data will be dynamically added here using `addPoint`
+//     }]
+// });
+
+
+    // Assume `defaultInfo` is your default data shown when nothing is clicked
+// var defaultInfo = [
+//     ['Property 1', 10],
+//     ['Property 2', 20],
+//     ['Property 3', 30]
+// ];
+
+// // Initialize Highcharts with default data
+// var chart3b = Highcharts.chart('container3b', {
+//     chart: {
+//         type: 'column'
+//     },
+//     title: {
+//         text: 'Feature Tooltip Data'
+//     },
+//     xAxis: {
+//         type: 'category',
+//         title: {
+//             text: 'Property Name'
+//         }
+//     },
+//     yAxis: {
+//         title: {
+//             text: 'Value'
+//         }
+//     },
+//     exporting: {
+//         buttons: {
+//             contextButton: {
+//                 menuItems: [
+//                     'viewFullscreen',
+//                     'printChart',
+//                     'separator',
+//                     'downloadPNG',
+//                     'downloadJPEG',
+//                     'downloadPDF',
+//                     'downloadSVG',
+//                     'separator',
+//                     {
+//                         text: 'Download CSV',
+//                         onclick: function () {
+//                             // Do nothing or show a message indicating it's inactive
+//                         }
+//                     },
+//                     {
+//                         text: 'Download XLS',
+//                         onclick: function () {
+//                             // Do nothing or show a message indicating it's inactive
+//                         },
+//                         className: 'inactive-menu-item'
+//                     },
+//                     {
+//                       text: 'View Data Table',
+//                       onclick: function() {
+//                         if (this.dataTableDiv && this.dataTableDiv.style.display !== 'none') {
+//                           this.dataTableDiv.style.display = 'none';
+//                         } else {
+//                           this.viewData();
+//                           this.dataTableDiv.style.display = '';
+//                         }
+//                       }
+//                     }
+//                 ]
+//             }
+//         }
+//     },
+//     series: [{
+//         name: 'Tooltip Data',
+//         data: defaultInfo  // Data will be dynamically updated here using `setData`
+//     }]
+// });
+
+// // Function to dynamically update the chart with new data
+// function updateHighchartData(newData) {
+//     chart3b.series[0].setData(newData, true);  // Update the chart with new data
+// }
+
+// // Function to show default info when no feature is clicked
+// function showDefaultInfo() {
+//     updateHighchartData(defaultInfo);
+// }
+
+
 
     var chart3 = Highcharts.chart('container3', {
       chart: {
@@ -1204,16 +1356,7 @@ window.onload = function() {
         }
     },
       legend: {
-        layout: 'vertical',
-        align: 'right',
-        verticalAlign: 'top',
-        x: -40,
-        y: 30,
-        floating: true,
-        borderWidth: 1,
-        backgroundColor:
-        Highcharts.defaultOptions.legend.backgroundColor || '#FFFFFF',
-        shadow: true
+        enabled: false
       },
       credits: {
         enabled: false
