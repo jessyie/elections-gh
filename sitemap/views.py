@@ -271,7 +271,7 @@ GHMap_PS_json = gpd.read_file(os.path.join(data_loc_str, 'images', 'new_ps', 'ne
     # dfGroupNew1 = groupedNewA.get_group((year, 'Parliament', region))
     # dfGroupNew1B = groupedNewA.get_group((year, 'Presidential First Round', region))
 
-def initialise_chart(year = '2020', region='Northern', census='Total_Pop', electoral='valid_votes'):
+def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electoral='valid_votes'):
 
     # RT
     # from .tasks import update_year_2024_data
@@ -361,6 +361,10 @@ def initialise_chart(year = '2020', region='Northern', census='Total_Pop', elect
     first_C_column_df = df.columns[df.columns.str.contains('_C')][0]
 
     df = df.loc[:, 'ConstName': first_C_column_df]
+    # Fill all columns from 'rejected_votes' to just before 'first_C_column' with 0
+    df.loc[:, 'reg_voters':first_C_column_df] = df.loc[:, 'reg_voters':first_C_column_df].apply(
+        lambda col: col.fillna(0) if col.name != 'first_C_column' else col.fillna('No information provided')
+    )
 
     # Fill all columns from 'rejected_votes' to just before 'first_C_column' with 0
     df.loc[:, 'reg_voters':first_C_column_df] = df.loc[:, 'reg_voters':first_C_column_df].apply(
