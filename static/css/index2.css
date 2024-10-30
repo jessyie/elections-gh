@@ -166,7 +166,7 @@
 }
 #map-container2 {
     width: 24.1vw;
-    margin-left: -1.2vw;
+    margin-left: -1.7vw;
     height: 56.8vh;
     padding: 0px;
     margin-top: -12px;
@@ -222,7 +222,7 @@
   /*  border-style: solid;
     border-radius: 3px;*/
     padding: 4px;
-    font-size: 8px;
+    font-size: 8 px;
     margin-left: -24px;
 }
 .bt1 {
@@ -366,8 +366,18 @@ textarea{
     left: 16px
 }
 #chart-container1b {
-    background-color: #e9ecef
-    left: 16px
+    background-color: #e9ecef;
+    left: -6px
+}
+#chart-container1cc {
+    background-color: #e9ecef;
+/*    left: 16px;*/
+    margin-top: 10px
+}
+#chart-container1dd {
+    background-color: #e9ecef;
+    left: -6px;
+    margin-top: 10px
 }
 #watermark-container {
     position: absolute; 
@@ -426,11 +436,11 @@ textarea{
         display: none;
     }
     #bar1 {
-        left: -9px;
+        left: 1vw;
     }
     #cfluid {
         position: relative;
-        left: -9px;
+        left: 1vw;
     }
     #regionSelection {
     font-size: 2vw;
@@ -468,19 +478,24 @@ textarea{
         display: none;
     }
     #chart-container {
-        left: -7.5px;
+        left: -1.5vw;
     }
     #chart-containerA {
-        left: -7.5px;
-        top: 406px;
+        left: -1.5vw;
+        top: 61vh;
     }
     #chart-containerB {
-        left: -7.5px;
-        top: 407px;
+        left: -1.5vw;
+        top: 61vh;
     }
+    /*#chart-container1b {
+        left: -1.5vw;
+        margin-top: 3vh;
+    }*/
     #chart-container1b {
-        left: -7.5px;
-        bottom: 801px;
+        left: -1.5vw;
+        bottom: 122vh;
+        margin-top: 3vh;
     }
     #map-container {
         width: 100vw;
@@ -518,11 +533,11 @@ textarea{
         margin-left: -6px;
     }
     #electoralSelection1 {
-        margin-left: 10px;
+        margin-left: 3vw;
 
     }
     #electoralSelection2 {
-        margin-left: 10px;
+        margin-left: 3vw;
 
     }
     #electoralSelection3 {
@@ -542,7 +557,7 @@ textarea{
 
     }
     #canter {
-        margin-left: 10px;
+        margin-left: 3vw;
 
     }
     #censusSelection {
@@ -833,7 +848,7 @@ textarea{
         height: 57vh;
     }
     #map-container2 {
-        margin-left: -1.3vw;
+        margin-left: -2.3vw;
         width: 24.5vw;
         height: 56.5vh;
     }
