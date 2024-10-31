@@ -788,11 +788,14 @@ var polling_stations = JSON.parse(document.getElementById('GHMap_PS_json').textC
                     if (key.startsWith("Winner_")) {
                         // Extract the year from the key (e.g., "Winner_2008" -> 2008)
                         var year = key.split("_")[1];
+                        
+                        // Check if the year is 2009 and rename it to 2008_Runoff
+                        var displayYear = (year === '2009') ? '2008 Runoff' : year;
 
                         // Skip the current year (assuming it's the same key format)
                         if (year !== 'Percentage') {
                             // Add the winner for that previous year to the tooltip
-                            tooltipContent += "<br>Winner " + year + ": " + feature.properties[key];
+                            tooltipContent += "<br>Winner " + displayYear + ": " + feature.properties[key];
                         }
                     }
                 }
@@ -928,10 +931,13 @@ var polling_stations = JSON.parse(document.getElementById('GHMap_PS_json').textC
                         // Extract the year from the key (e.g., "Winner_2008" -> 2008)
                         var year = key.split("_")[1];
 
+                        // Check if the year is 2009 and rename it to 2008_Runoff
+                        var displayYear = (year === '2009') ? '2008 Runoff' : year;
+
                         // Skip the current year (assuming it's the same key format)
                         if (year !== 'Percentage') {
                             // Add the winner for that previous year to the tooltip
-                            tooltipContent += "<br>Winner " + year + ": " + feature.properties[key];
+                            tooltipContent += "<br>Winner " + displayYear + ": " + feature.properties[key];
                         }
                     }
                 }
@@ -1523,10 +1529,13 @@ function jsoncreateValidVotesGeoJSON(merged_GHMap2A) {
                         // Extract the year from the key (e.g., "Winner_2008" -> 2008)
                         var year = key.split("_")[1];
 
+                        // Check if the year is 2009 and rename it to 2008_Runoff
+                        var displayYear = (year === '2009') ? '2008 Runoff' : year;
+
                         // Skip the current year (assuming it's the same key format)
                         if (year !== 'Percentage') {
                             // Add the winner for that previous year to the tooltip
-                            tooltipContent += "<br>Winner " + year + ": " + feature.properties[key];
+                            tooltipContent += "<br>Winner " + displayYear + ": " + feature.properties[key];
                         }
                     }
                 }
@@ -1696,10 +1705,13 @@ function jsoncreateValidVotes_ConstGeoJSON(merged2_GHMap2ConstCONST2) {
                         // Extract the year from the key (e.g., "Winner_2008" -> 2008)
                         var year = key.split("_")[1];
 
+                        // Check if the year is 2009 and rename it to 2008_Runoff
+                        var displayYear = (year === '2009') ? '2008 Runoff' : year;
+
                         // Skip the current year (assuming it's the same key format)
                         if (year !== 'Percentage') {
                             // Add the winner for that previous year to the tooltip
-                            tooltipContent += "<br>Winner " + year + ": " + feature.properties[key];
+                            tooltipContent += "<br>Winner " + displayYear + ": " + feature.properties[key];
                         }
                     }
                 }
@@ -2230,7 +2242,7 @@ function updateCharts(selectedYear, region, census, electoral) {
         },
       },
       title: {
-        text: 'Total Seat Won Per Political Party (Parliament)',
+        text: 'Total Seats Won Per Political Party (Parliament)',
         align: 'left'
       },
 

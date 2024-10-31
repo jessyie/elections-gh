@@ -531,9 +531,12 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
         
         # Clean the 'electoral' column by removing commas and converting it to an integer
         dfRegions[electoral] = dfRegions[electoral].replace(',', '', regex=True).fillna(0).astype(int)
-        
-        # Group by the `RegName` column and sum the 'electoral' values
-        dfRegionsSum = dfRegions.groupby(by=[RegName])[electoral].sum().reset_index()
+
+        if args:
+            dfRegionsSum = dfRegions
+        else:
+            # Group by the `RegName` column and sum the 'electoral' values
+            dfRegionsSum = dfRegions.groupby(by=[RegName])[electoral].sum().reset_index()
         
         # Sorting the results in descending order by 'electoral'
         dfRegionsSum = dfRegionsSum.sort_values(by=electoral, ascending=False)
@@ -702,6 +705,48 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
             df_prev['year_'] = df_prev['year_'].astype(int)
 
             # Group data by year, office, and region
+            grouped_prev = df_prev.groupby(['year_', 'office'])
+
+            # Check if the group exists
+            if (prev_year, office) in grouped_prev.groups:
+                # If the group exists, fetch it
+                dfGroup_prev = grouped_prev.get_group((prev_year, office))
+
+                # Apply further transformations
+                dfGroupA_prev = total_valid_votes(dfGroup_prev)
+                dfRegions_prev = total_valid_votes_levelBased(dfGroup_prev, 'ConstName', 'ConstCode')[1]
+
+                # Get the winners for this previous year
+                values_dict_prev = total_valid_votes_parties_levelBased(dfRegions_prev, dfGroupA_prev, "ConstName", "ConstCode")[0]
+                
+                # Merge the previous year's winners with the current year's values_dict
+                values_dict[f"Winner_{prev_year}"] = values_dict_prev['Winner']
+
+                # Replace NaN values with 'No winner'
+                values_dict[f"Winner_{prev_year}"] = values_dict[f"Winner_{prev_year}"].fillna("No winner")
+            else:
+                # Handle missing group, e.g., log, skip, or assign default values
+                print(f"No data for year: {prev_year}, office: {office}")
+                values_dict[f"Winner_{prev_year}"] = "No data"
+
+        return values_dict
+
+
+
+    def prev_wins_const_grouped(office, values_dict):
+        # Loop through previous years and fetch their winners
+        for prev_year in previous_years:
+            # Select the appropriate query based on the previous year
+            if prev_year in [2020, 2024]:
+                query_prev = query1.format(year=prev_year)
+            else:
+                query_prev = query2.format(year=prev_year)
+
+            # Fetch data for the previous year
+            df_prev = pd.read_sql(query_prev, engine)
+            df_prev['year_'] = df_prev['year_'].astype(int)
+
+            # Group data by year, office, and region
             grouped_prev = df_prev.groupby(['year_', 'office', 'RegName'])
 
             # Check if the group exists
@@ -715,7 +760,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
                 # Get the winners for this previous year
                 values_dict_prev = total_valid_votes_parties_levelBased(dfRegions_prev, dfGroupA_prev, "ConstName", "ConstCode")[0]
-
+                
                 # Merge the previous year's winners with the current year's values_dict
                 values_dict[f"Winner_{prev_year}"] = values_dict_prev['Winner']
 
@@ -1123,7 +1168,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     #print(values_dictConstA)
 
     values_dictConstA, df_grouped3zP, graph3AX_1A = total_valid_votes_parties_levelBased(dfConst, dfGroupAC, "ConstName", "ConstCode")
-    values_dictConstA = prev_wins_const('Parliamentary', values_dictConstA)
+    values_dictConstA = prev_wins_const_grouped('Parliamentary', values_dictConstA)
     #print(values_dictConstA)
 
     # // (D) Ashanti(Presidential) Do Total sum operations for each party on each constituency based on each region for both necessary offices (F) Presidential
@@ -1206,7 +1251,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     values_dictConstB, df_grouped3zP2, graph3AX_1B = total_valid_votes_parties_levelBased(dfConstB, dfGroupBC, "ConstName", "ConstCode")
     #print(values_dictConstB)
-    values_dictConstB = prev_wins_const('Presidential', values_dictConstB)
+    values_dictConstB = prev_wins_const_grouped('Presidential', values_dictConstB)
     #print(values_dictConstB)
     #////////////////////////////////////////////////////////////////////////////////////
 
@@ -1427,11 +1472,13 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     values_dictConstBCONST2 = df_cleanC2020B.set_index("ConstCode")[["ConstName", "Values_map", "Winner", "Second_Highest_Value_Name", "Winner_Percentage", "Second_Highest_Percentage"]]
     #print(values_dictConstBCONST2)
+
     #values_dictConstACONST2ZZB = total_valid_votes_parties_levelBased(dfConst2ZZB, dfGroupB, "ConstName", "ConstCode")[0]
 
     values_dictConstBCONST2 = prev_wins_const('Presidential', values_dictConstBCONST2)
+    #print(values_dictConstBCONST2)
 
-    #print(values_dictConstACONST2ZZB)
+    #print(values_dictConstBCONST2)
     #global dfGroupH2
 
      #// List of the header columns
