@@ -166,7 +166,7 @@
 }
 #map-container2 {
     width: 24.1vw;
-    margin-left: -1.2vw;
+    margin-left: -1.7vw;
     height: 56.8vh;
     padding: 0px;
     margin-top: -12px;
@@ -222,7 +222,7 @@
   /*  border-style: solid;
     border-radius: 3px;*/
     padding: 4px;
-    font-size: 12px;
+    font-size: 8 px;
     margin-left: -24px;
 }
 .bt1 {
@@ -323,6 +323,28 @@
     opacity: 1;
 }
 
+#refetchButton .hover-text3_reset {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    top: 125%; /* Position below the button */
+    left: 160%; /* Center horizontally with respect to button */
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#refetchButton:hover .hover-text3_reset {
+    visibility: visible;
+    opacity: 1;
+}
+
 .form1 div{
     display: flex;
     justify-content: space-between;
@@ -359,6 +381,100 @@ textarea{
 #chart-container {
     background-color: #e9ecef
 }
+#chart-containerA {
+    left: 7px
+}
+#chart-containerB {
+    left: 16px
+}
+#chart-container1b {
+    background-color: #e9ecef;
+    left: -6px
+}
+#chart-container1cc {
+    background-color: #e9ecef;
+/*    left: 16px;*/
+    margin-top: 10px
+}
+#chart-container1dd {
+    background-color: #e9ecef;
+    left: -6px;
+    margin-top: 10px
+}
+#watermark-container {
+    position: absolute; 
+    top: 50vh; 
+    left: 130px; 
+    z-index: 1000;
+}
+#watermark-container2 {
+    position: absolute; 
+    top: 50vh; 
+    left: 133px; 
+    z-index: 1000;
+}
+.watermark {
+    font-size: small;
+    opacity: 1; 
+    color: #d68d33;
+}
+
+.leaflet-pane {
+    margin-top: 22px;
+}
+
+#but11 {
+    position: absolute; 
+    z-index: 1000; 
+    font-size: xx-small; 
+    top: 50vh; 
+    left: 12px;
+}
+#but22 {
+    position: absolute; 
+    z-index: 1000; 
+    font-size: xx-small; 
+    top: 50vh; 
+    left: 52px;
+}
+#but33 {
+    position: absolute;
+    z-index: 1000;
+    font-size: xx-small;
+    top: 50vh;
+    left: 92px;
+}
+#card-content {
+    max-height: 284px;       /* Limits height of the list */
+    overflow-y: auto;        /* Enables vertical scrolling */
+}
+
+#card-content .list-group-item {
+    background-color: aliceblue;  /* Blue background color */
+    border-bottom: 1px solid black;  /* Bottom border to separate items */
+}
+
+#card-content .list-group-item:last-child {
+    border-bottom: none;      /* Removes bottom border from last item */
+}
+
+/* Optional styling for the scrollbar (for WebKit browsers like Chrome, Safari) */
+#card-content::-webkit-scrollbar {
+    width: 8px;               /* Width of the scrollbar */
+}
+
+#card-content::-webkit-scrollbar-track {
+    background: #f1f1f1;      /* Scrollbar track color */
+}
+
+#card-content::-webkit-scrollbar-thumb {
+    background: #888;         /* Scrollbar thumb color */
+    border-radius: 10px;      /* Rounded corners */
+}
+
+#card-content::-webkit-scrollbar-thumb:hover {
+    background: #555;         /* Color on hover */
+}
 
 @media screen and (max-width: 600px)
 {
@@ -368,16 +484,23 @@ textarea{
     #nano_2 {
         display: none;
     }
+    #bar1 {
+        left: 1vw;
+    }
+    #cfluid {
+        position: relative;
+        left: 1vw;
+    }
     #regionSelection {
     font-size: 2vw;
-    margin-left: 1vw;
-    margin-top: -0.2vh;
+    margin-left: 7.7vw;
+    margin-top: -1.2vh;
     }
     #yearSelection {
     font-size: 1.5vw;
     margin-right: 1vw;
     margin-left: -25vw;
-    margin-top: -0.5vh;
+    margin-top: -1.2vh;
     }
     #title_1 {
     border-left-style: inset;
@@ -403,43 +526,91 @@ textarea{
     .title_1D {
         display: none;
     }
+    #chart-container {
+        left: -1.5vw;
+    }
+    #chart-containerA {
+        left: -1.5vw;
+        top: 61vh;
+    }
+    #chart-containerB {
+        left: -1.5vw;
+        top: 61vh;
+    }
+    /*#chart-container1b {
+        left: -1.5vw;
+        margin-top: 3vh;
+    }*/
+    #chart-container1b {
+        left: -1.5vw;
+        bottom: 122vh;
+        margin-top: 3vh;
+    }
     #map-container {
         width: 100vw;
-        margin-left: -7px;
+        margin-left: 0px;
     }
     #container1 {
-        margin-left: -8px;
+        margin-left: 0px;
         width: 100vw;
     }
     #map-container2 {
-        margin-left: -8px;
+        margin-left: 0px;
         width: 100vw;
     }
     #container1b {
-        margin-left: -8px;
+        margin-left: 0px;
         width: 100vw;
     }
     #container2 {
-        margin-left: -8px;
+        margin-left: 0px;
         width: 100vw;
     }
     #container3 {
-        margin-left: -7px;
+        margin-left: 0px;
         width: 100vw;
     }
     #container3b {
-        margin-left: -7px;
+        margin-left: 0px;
         width: 100vw;
     }
     #container2b {
-        margin-left: -8px;
+        margin-left: 0px;
         width: 100vw;
     }
     .bt2 {
         margin-left: -6px;
     }
+    #electoralSelection1 {
+        margin-left: 3vw;
+
+    }
+    #electoralSelection2 {
+        margin-left: 3vw;
+
+    }
+    #electoralSelection3 {
+        margin-left: 10px;
+
+    }
+    #electoralSelection4 {
+        margin-left: 10px;
+
+    }
+    #electoralSelection5 {
+        margin-left: 10px;
+
+    }
+    #messa {
+        margin-left: 10px;
+
+    }
+    #canter {
+        margin-left: 3vw;
+
+    }
     #censusSelection {
-        margin-left: -5px;
+        margin-left: 10px;
         font-size: 3vw;
     }
     .bt1 {
@@ -492,6 +663,40 @@ textarea{
     }
     .pp2 {
         width: 24vw;
+    }
+    #watermark-container {
+        top: 326px;
+        left: 145px;
+    }
+    #watermark-container2 {
+        top: 294px;
+        left: 17px;
+    }
+    .watermark2 {
+    position: relative;
+    left: 112px;
+    margin-bottom: 19px;
+    }
+    #but11 {
+        top: 50vh;
+    }
+    #but22 {
+        top: 50vh;
+    }
+    #but33 {
+        top: 50vh;
+    }
+    #refetchButton {
+        position: absolute;
+        font-size: xx-small;
+        left: 53vw;
+        top: 5.5vh;
+        }
+    #logout1 {
+        position: absolute;
+        font-size: 5px;
+        top: 5.5vh;
+        left: 66vw;
     }
 
     
@@ -641,6 +846,18 @@ textarea{
     .pp2 {
         width: 8vw;
     }
+    #refetchButton {
+        position: absolute;
+        font-size: x-small;
+        left: 69.5vw;
+        top: 0.5vh;
+        }
+    #logout1 {
+        position: relative;
+        font-size: 5px;
+        top: 0.5vh;
+        left: 0vw;
+    }
 
 
 }
@@ -651,19 +868,23 @@ textarea{
         margin-left: 1vw;
     }
     #nano_2 {
+        position: relative;
+        left: 2vw;
         font-size: 0.8vw;
         margin-bottom: -0.3vh;
     }
     #regionSelection {
-    font-size: 0.7vw;
+        font-size: 0.7vw;
     }
     #yearSelection {
-    font-size: 0.7vw;
+        position: relative;
+        font-size: 0.7vw;
+        left: 4vw;
     }
     #title_1 {
-    margin-left: -1vw;
-    height: 1vh;
-    margin-bottom: 0vh;
+        margin-left: -1vw;
+        height: 1vh;
+        margin-bottom: 0vh;
     }
     #but1 {
         font-size: 0.6vw;
@@ -704,7 +925,7 @@ textarea{
         height: 57vh;
     }
     #map-container2 {
-        margin-left: -1.3vw;
+        margin-left: -2.3vw;
         width: 24.5vw;
         height: 56.5vh;
     }
@@ -746,6 +967,26 @@ textarea{
     }
     .pp2 {
         width: 4vw;
+    }
+    #but11 {
+        top: 50vh;
+    }
+    #but22 {
+        top: 50vh;
+    }
+    #but33 {
+        top: 50vh;
+    }
+    #refetchButton {
+        position: absolute;
+        font-size: x-small;
+        left: 68.5vw;
+        top: 1.5vh;
+        }
+    #logout1 {
+        position: relative;
+        font-size: xx-small;
+        top: 0.5vh;
     }
 
 

@@ -17,6 +17,10 @@
   pointer-events: none;
 }
 
+/*.leaflet-pane {
+    margin-top: 32px;
+}
+*/
 
 /* Center the modal */
 .my-modal {

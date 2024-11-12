@@ -15,8 +15,8 @@ from decouple import config
 from dotenv import load_dotenv
 # Example: Increase timeout for Redis
 # RT
-# import kombu
-# from kombu import Exchange, Queue
+import kombu
+from kombu import Exchange, Queue
 
 
 
@@ -29,10 +29,11 @@ DATA_LOC =BASE_DIR / config('DATA_LOC')
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", config('SECRET_KEY'))
-
+#SECRET_KEY = os.environ.get("SECRET_KEY", config('SECRET_KEY'))
+SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", config('DEBUG'))
+#DEBUG = os.environ.get("DEBUG", config('DEBUG'))
+DEBUG = os.getenv('DEBUG')  == 'True'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'http://0.0.0.0:10000', 'localhost', '.onrender.com','www.election-gh.com']
 #ALLOWED_HOSTS = ['0.0.0.0:10000', '.onrender.com','www.election-gh.com']
@@ -42,6 +43,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'http://0.0.0.0:10000', 'localhost', '.onrender.co
 # Application definition
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,9 +52,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'compressor',
     'sitemap.apps.SitemapConfig',
-    # 'django_celery_results',
-    # 'django_celery_beat',
-    # 'channels'
+    'django_celery_results',
+    'django_celery_beat',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -164,12 +166,12 @@ STATICFILES_FINDERS = [
 ]
 
 STATIC_URL = 'static/'
-STATIC_ROOT = 'staticfiles'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static')
+# ]
 
 
 # Default primary key field type
@@ -183,28 +185,35 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # RT
-# CELERY_BROKER_URL = 'redis://127.0.0.1:6379'  # Redis as the broker
-# CELERY_RESULT_BACKEND = 'django-db'
-# CELERY_ACCEPT_CONTENT = ['application/json']
-# CELERY_TASK_SERIALIZER = 'json'
-# CELERY_RESULT_SERIALIZER = 'json'
-# CELERY_TIMEZONE = 'Africa/Accra'
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379'  # Redis as the broker
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Africa/Accra'
 
 # CELERY BEAT
 # RT
-# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-#CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}  # 1 hour
-#CELERY_TASK_RESULT_EXPIRES = 3600  # 1 hour
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}  # 1 hour
+CELERY_TASK_RESULT_EXPIRES = 3600  # 1 hour
 
 # Django Channels settings
 # RT
-# ASGI_APPLICATION = 'geospatialproject.asgi.application'
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels_redis.core.RedisChannelLayer",
-#         "CONFIG": {
-#             "hosts": [("127.0.0.1", 6379)],
-#         },
-#     },
-# }
+ASGI_APPLICATION = 'geospatialproject.asgi.application'
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+
+# Optional: Customize message tags with Bootstrap
+from django.contrib.messages import constants as messages
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger',
+    messages.SUCCESS: 'success',
+}

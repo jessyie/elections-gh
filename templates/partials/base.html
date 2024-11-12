@@ -23,6 +23,8 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
     integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
 
   <title>Geoproject</title>
   <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
@@ -80,6 +82,7 @@
         <h1 class="title_1A"><span class="title_1B">ELECTORAL DASHBOARD</span><span class="title_1C">|</span><span class="title_1D">REPUBLIC OF GHANA</span></h1>
       </a>
 
+      <button id="refetchButton"><i class="fa-solid fa-rotate-right fa-sm"></i><span class="hover-text3_reset">Refresh Year</span></button> 
       <select id='yearSelection' class=btn-secondary>
         <option selected value="">Years</option>
         <option value="2024">2024</option>
@@ -96,6 +99,7 @@
           ABOUT
         </button>
         <a class="navbar-brand item3" id="nano_2" href="#">PARLIAMENT</a>
+        <a href="{% url 'logout' %}" class="btn btn-primary" id="logout1">Logout</a>
       </div>
       
 
@@ -364,7 +368,7 @@ window.onload = function() {
       xAxis: {
         categories: {{ names | safe }},
         title: {
-          text: 'Regions'
+          text: 'Parties'
         },
         gridLineWidth: 1,
         lineWidth: 0

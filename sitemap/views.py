@@ -1,4 +1,7 @@
 from django.core.cache import cache
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth.decorators import login_required
 #from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -13,6 +16,7 @@ import fiona
 import locale
 import json
 #from folium import plugins
+from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.conf import settings
@@ -240,8 +244,9 @@ data_loc_str = str(settings.DATA_LOC)
 
 GHMap2 = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions16.geojson'))
 GHMap = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions.geojson'))
-GHMapConst = gpd.read_file(os.path.join(data_loc_str, 'images', 'constituencies2020.geojson'))
+GHMapConst = gpd.read_file(os.path.join(data_loc_str, 'images', 'constituencies2012_2020.geojson'))
 GHMapConst2 = gpd.read_file(os.path.join(data_loc_str, 'images', 'constituencies2004_2008.geojson'))
+GHMapConst2024 = gpd.read_file(os.path.join(data_loc_str, 'images', 'constituencies2024.geojson'))
 GHMap_PS = gpd.read_file(os.path.join(data_loc_str, 'images', 'new_ps', 'new_ps2', 'polling_stations.geojson'))
 GHMap_json = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions.geojson')).to_json()
 GHMap2_json = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions16.geojson')).to_json()
@@ -724,10 +729,12 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
                 # Replace NaN values with 'No winner'
                 values_dict[f"Winner_{prev_year}"] = values_dict[f"Winner_{prev_year}"].fillna("No winner")
+                
             else:
                 # Handle missing group, e.g., log, skip, or assign default values
                 print(f"No data for year: {prev_year}, office: {office}")
                 values_dict[f"Winner_{prev_year}"] = "No data"
+            
 
         return values_dict
 
@@ -1475,8 +1482,21 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     #values_dictConstACONST2ZZB = total_valid_votes_parties_levelBased(dfConst2ZZB, dfGroupB, "ConstName", "ConstCode")[0]
 
+    # Check all occurrences of indices and their counts
+    # index_counts = values_dictConstBCONST2.index.value_counts()
+    # print("Index counts:\n", index_counts)
+
+    # # Further check if any index appears more than once
+    # duplicates = index_counts[index_counts > 1]
+    # if not duplicates.empty:
+    #     print("Duplicate indices with their counts:\n", duplicates)
+
+    # values_dictConstBCONST2 = values_dictConstBCONST2[~values_dictConstBCONST2.index.duplicated(keep='first')]
+
+
+
     values_dictConstBCONST2 = prev_wins_const('Presidential', values_dictConstBCONST2)
-    #print(values_dictConstBCONST2)
+    #print("Normal: " , values_dictConstBCONST2)
 
     #print(values_dictConstBCONST2)
     #global dfGroupH2
@@ -1568,20 +1588,36 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     #  #________________________________________
 
 
-    # #// Constituency Parliament year 2020 and beyond //
+    # #// Constituency Parliament year 2012 to 2020 //
 
 
     # #______________________________________
 
 
+    # Choose constituency code based on the year
+    if year == '2012' or year == '2016':
+        constchoice = 'ConstCode16_12'
+    else:
+        constchoice = 'ConstCode'
 
-    merged_GHMap2Const_json = GHMapConst.merge(values_dictConstA, left_on="ConstCode", right_index=True)
+
+
+    merged_GHMap2Const_json = GHMapConst.merge(values_dictConstA, left_on=constchoice, right_index=True)
 
     merged_GHMap2Const = merged_GHMap2Const_json.to_json()
 
+    
+
+    # Constituency Parliament year 2024
+
+    merged_GHMap2Const_json2024 = GHMapConst2024.merge(values_dictConstA, left_on="ConstCode", right_index=True)
+
+    merged_GHMap2Const2024 = merged_GHMap2Const_json2024.to_json()
+
+
     #__________________________________________
 
-    # #// Constituency Parliament year 2016 and below //
+    # #// Constituency Parliament year 2004 and 2008 //
 
 
     # #______________________________________
@@ -1598,18 +1634,25 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     #/////////////////////////////////////////////////////
 
-    # JUST 2020 and ABOVE CONSTIYUENCY INFORMATION PARLIAMENT (NOT GRPUPED)
+    # JUST 2012 to 2020 CONSTIYUENCY INFORMATION PARLIAMENT (NOT GRPUPED)
 
-    merged_GHMap2Const_jsonCONST2 = GHMapConst.merge(values_dictConstACONST2, left_on="ConstCode", right_index=True)
+    merged_GHMap2Const_jsonCONST2 = GHMapConst.merge(values_dictConstACONST2, left_on=constchoice, right_index=True)
 
     merged_GHMap2ConstCONST2 = merged_GHMap2Const_jsonCONST2.to_json()
 
     # print(merged_GHMap2ConstCONST2)
 
+    # JUST 2024 CONSTIYUENCY INFORMATION PARLIAMENT (NOT GRPUPED)
+
+    merged_GHMap2Const_jsonCONST2024 = GHMapConst2024.merge(values_dictConstACONST2, left_on="ConstCode", right_index=True)
+
+    merged_GHMap2ConstCONST2024 = merged_GHMap2Const_jsonCONST2024.to_json()
+
+
 
     #/////////////////////////////////////////////////////
 
-    # JUST 2016 and BELOW CONSTIYUENCY INFORMATION PARLIAMENT (NOT GRPUPED)
+    # JUST 2004 and 2008 CONSTIYUENCY INFORMATION PARLIAMENT (NOT GRPUPED)
 
     merged_GHMap2Const_jsonCONST2_10 = GHMapConst2.merge(values_dictConstACONST2, left_on="ConstCode", right_index=True)
 
@@ -1621,19 +1664,26 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     # #_______________________________________
 
 
-    # #// Constituency Presidential year 2020 and beyond //
+    # #// Constituency Presidential year 2012 to 2020 //
 
     # #_______________________________________
 
-    merged2_GHMap2Const_json = GHMapConst.merge(values_dictConstB, left_on="ConstCode", right_index=True)
+    merged2_GHMap2Const_json = GHMapConst.merge(values_dictConstB, left_on=constchoice, right_index=True)
 
     merged2_GHMap2Const = merged2_GHMap2Const_json.to_json()
 
 
+    #// Constituency Presidential year 2024 //
+
+    merged2_GHMap2Const_json2024 = GHMapConst2024.merge(values_dictConstB, left_on="ConstCode", right_index=True)
+
+    merged2_GHMap2Const2024 = merged2_GHMap2Const_json2024.to_json()
+
+
     # #_______________________________________
 
 
-    # #// Constituency Presidential year 2016 and below //
+    # #// Constituency Presidential year 2004 and 2008 //
 
     # #_______________________________________
 
@@ -1648,15 +1698,22 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     #/////////////////////////////////////////////////////
 
-    # JUST 2020 and ABOVE CONSTIYUENCY INFORMATION PRESIDENTIAL (NOT GROUPED)
+    # JUST 2012 to 2020 CONSTIYUENCY INFORMATION PRESIDENTIAL (NOT GROUPED)
 
-    merged2_GHMap2Const_jsonCONST2 = GHMapConst.merge(values_dictConstBCONST2, left_on="ConstCode", right_index=True)
+    merged2_GHMap2Const_jsonCONST2 = GHMapConst.merge(values_dictConstBCONST2, left_on=constchoice, right_index=True)
 
     merged2_GHMap2ConstCONST2 = merged2_GHMap2Const_jsonCONST2.to_json()
 
 
+    # JUST 2024 CONSTIYUENCY INFORMATION PRESIDENTIAL (NOT GROUPED)
 
-    # JUST 2016 and BELOW CONSTIYUENCY INFORMATION PRESIDENTIAL (NOT GROUPED)
+    merged2_GHMap2Const_jsonCONST2024 = GHMapConst2024.merge(values_dictConstBCONST2, left_on="ConstCode", right_index=True)
+
+    merged2_GHMap2ConstCONST2024 = merged2_GHMap2Const_jsonCONST2024.to_json()
+
+
+
+    # JUST 2004 and 2008 CONSTIYUENCY INFORMATION PRESIDENTIAL (NOT GROUPED)
 
     merged2_GHMap2Const_jsonCONST2_10 = GHMapConst2.merge(values_dictConstBCONST2, left_on="ConstCode", right_index=True)
 
@@ -1675,19 +1732,32 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     # FLASH_CONST ///
 
-    # mergedFlashCONST_GHMap2_json = GHMapConst.merge(flash_CONSTdf2020_GROUPED_DONE, left_on="ConstCode", right_on="ConstCode")
+    mergedFlashCONST_GHMap2_json = GHMapConst.merge(flash_CONSTdf2020_GROUPED_DONE, left_on=constchoice, right_on="ConstCode")
 
-    # mergedFlashCONST_GHMap2 = mergedFlashCONST_GHMap2_json.to_json()
+    mergedFlashCONST_GHMap2 = mergedFlashCONST_GHMap2_json.to_json()
 
     #print(mergedFlashCONST_GHMap2_json)
 
+    # 2024
+
+    mergedFlashCONST_GHMap2_json2024 = GHMapConst2024.merge(flash_CONSTdf2020_GROUPED_DONE, left_on="ConstCode", right_on="ConstCode")
+
+    mergedFlashCONST_GHMap2024 = mergedFlashCONST_GHMap2_json2024.to_json()
+
     #/////////////////////////////
 
-    # MERGING BASED ON NO GROUPING
+    # MERGING 2020 BASED ON NO GROUPING
 
-    mergedFlashCONST_GHMap2_jsonNew = GHMapConst.merge(flash_CONSTdf, left_on="ConstCode", right_on="ConstCode")
+    mergedFlashCONST_GHMap2_jsonNew = GHMapConst.merge(flash_CONSTdf, left_on=constchoice, right_on="ConstCode")
 
     mergedFlashCONST_GHMap2New = mergedFlashCONST_GHMap2_jsonNew.to_json()
+
+
+    # MERGING 2024 BASED ON NO GROUPING
+
+    mergedFlashCONST_GHMap2_jsonNew2024 = GHMapConst2024.merge(flash_CONSTdf, left_on="ConstCode", right_on="ConstCode")
+
+    mergedFlashCONST_GHMap2New2024 = mergedFlashCONST_GHMap2_jsonNew2024.to_json()
 
 
     #print(mergedFlashCONST_GHMap2_jsonNew)
@@ -1716,8 +1786,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
 
 
-
-     #________________________________
+    #________________________________
 
     #// POPULATION DATA PROCESSING//
 
@@ -1732,7 +1801,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
        return tSum2P, dfContinentSum2P
 
-   # // Finding the Total Pop in relation to the Regions
+    # // Finding the Total Pop in relation to the Regions
     # dfGroupA2P = df3[["RegName", census]].copy() # Selecting specific columns and getting rid of the commas in the string
     # dfGroupA2P[census] = dfGroupA2P[census].astype('float') # Converting all the string in the columns to integers
     # tSum2P = dfGroupA2P[census].values.sum() # Sum operation on a specific column
@@ -1756,7 +1825,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
     #// List of the header columns
     dfGroupH = df3.columns.tolist()[8:-1]
-    
+
     # tSum2P = dfGroupA2P[census].values.sum().astype('float').tolist()
     # graph1AX2P = dfContinentSum2P['RegName'].values.tolist()
     # graph1AY2P = dfContinentSum2P[census].values.tolist()
@@ -1765,7 +1834,7 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     # graph1BX2P = dfContinentSumB2P['ConstName'].values.tolist()
     # graph1BY2P = dfContinentSumB2P[census].values.tolist()
 
- 
+
     context = {
     'tSum' : tSum,
     'tSum2' : tSum2,
@@ -1832,6 +1901,12 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     'GHMap2_json': GHMap2_json,
     'GHMap_json': GHMap_json,
     'GHMap_PS_json': GHMap_PS_json,
+    'merged_GHMap2Const2024': merged_GHMap2Const2024,
+    'merged_GHMap2ConstCONST2024': merged_GHMap2ConstCONST2024,
+    'merged2_GHMap2Const2024': merged2_GHMap2Const2024,
+    'merged2_GHMap2ConstCONST2024': merged2_GHMap2ConstCONST2024,
+    'mergedFlashCONST_GHMap2024' : mergedFlashCONST_GHMap2024,
+    'mergedFlashCONST_GHMap2New2024': mergedFlashCONST_GHMap2New2024,
     
     }
 
@@ -1839,21 +1914,64 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     return context  
 
 # Map
-                        
+@login_required(login_url='login')                     
 def map(request):
     data = initialise_chart()
     # data['m'] = m
     return render(request, 'map.html', data)
 
-# Routes
 
+def SignupPage(request):
+    if request.method == 'POST':
+        uname = request.POST.get('username')
+        email = request.POST.get('email')
+        pass1 = request.POST.get('password1')
+        pass2 = request.POST.get('password2')
+
+        if pass1 != pass2:
+            messages.error(request, "Your password and confirm password are not the same!")
+            return redirect('signup')  # Redirect back to the signup page
+        else:
+            # Check if username already exists
+            if User.objects.filter(username=uname).exists():
+                messages.error(request, "Username already exists!")
+                return redirect('signup')
+
+            # Create and save the user
+            my_user = User.objects.create_user(uname, email, pass1)
+            my_user.save()
+            messages.success(request, "Account created successfully!")
+            return redirect('login')
+
+    return render(request, 'signup.html')
+
+def LoginPage(request):
+    if request.method=='POST':
+        username=request.POST.get('username')
+        pass1=request.POST.get('pass')
+        user=authenticate(request,username=username,password=pass1)
+        if user is not None:
+            login(request,user)
+            return redirect('map')
+        else:
+            messages.error(request, "Username or Password is incorrect!!!")
+            return redirect('login')  
+
+    return render (request,'login.html')
+
+def LogoutPage(request):
+    logout(request)
+    return redirect('login')
+
+# Routes
+@login_required(login_url='login') 
 def my_routing(request):
     
     return render(request, 'index.html')
 
 
 
-
+@login_required(login_url='login') 
 def update_charts(request):
     
     #RT
@@ -1945,7 +2063,7 @@ def update_charts(request):
 
 
 
-
+@login_required(login_url='login') 
 def selectCensus(request):
     census = request.GET.get('census')
     year = request.GET.get('year')
@@ -2026,7 +2144,7 @@ def selectCensus(request):
 # ////////////////////////////////////////////////////////////////////////
 
 # (1) Chart 1
-
+@login_required(login_url='login') 
 def selectElectoral1(request):
     electoral = request.GET.get('electoral')
     year = request.GET.get('year')
