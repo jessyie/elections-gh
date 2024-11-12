@@ -1,5 +1,4 @@
 affine
-aiohappyeyeballs
 aiohttp
 aiosignal
 alembic
@@ -18,7 +17,7 @@ apache-airflow-providers-sqlite
 apispec
 argcomplete
 asgiref
-astroid @ file:///D:/bld/astroid_1697450428401/work
+astroid 
 asttokens
 attrs
 autobahn
@@ -150,7 +149,7 @@ opentelemetry-proto
 opentelemetry-sdk
 opentelemetry-semantic-conventions
 ordered-set
-packaging @ file:///home/conda/feedstock_root/build_artifacts/packaging_1696202382185/work
+packaging 
 pandas
 pandocfilters
 parso
@@ -193,13 +192,13 @@ redis
 referencing
 requests
 requests-toolbelt
-requirements-detector @ file:///home/conda/feedstock_root/build_artifacts/requirements-detector_1685006374652/work
+requirements-detector 
 rfc3339-validator
 rich
 rich-argparse
 rjsmin
 rpds-py
-semver @ file:///home/conda/feedstock_root/build_artifacts/semver_1696861993140/work
+semver 
 service-identity
 setproctitle
 setuptools
@@ -219,7 +218,7 @@ termcolor
 text-unidecode
 time-machine
 tinycss2
-toml @ file:///home/conda/feedstock_root/build_artifacts/toml_1604308577558/work
+toml 
 tornado
 traitlets
 Twisted
