@@ -16,7 +16,6 @@ colorama==0.4.6
 contourpy
 channels
 channels-redis
-charset-normalizer
 cycler
 Django
 django-appconf
