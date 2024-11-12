@@ -19,8 +19,8 @@ channels-redis
 cycler
 Django
 django-appconf
-django-celery-beat
-django-celery-results
+django-celery-beat==2.7.0
+django-celery-results==2.5.1
 django-compressor
 django-redis
 fiona
