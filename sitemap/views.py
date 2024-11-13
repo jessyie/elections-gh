@@ -138,8 +138,25 @@ queryPop = """
         Join public."2020constituencies" on "2020districts"."ConstCode"="2020constituencies"."ConstCode";
 
 """
-with engine.connect() as connection:
-    df3 = pd.read_sql(queryPop, con=connection)
+
+df3 = pd.read_sql(queryPop, con=engine)
+
+with engine.connect() as conn:
+    df3 = pd.read_sql(sql=queryPop, con=conn.connection)
+
+
+# # Works with pandas<2.2.0
+# df = pd.read_sql(
+#     sql=query,
+#     con=engine,
+# )
+
+# # Works with pandas==2.2.0
+# with engine.connect() as conn:
+#     df = pd.read_sql(
+#         sql=query,
+#         con=conn.connection
+#     )
 
 
 #/////////////////////////////////
@@ -199,8 +216,10 @@ queryREGdf2020 = """
 
 """
 
-with engine.connect() as connection:
-    flash_REGdf2020 = pd.read_sql(queryREGdf2020, con=connection)
+flash_REGdf2020 = pd.read_sql(queryREGdf2020, con=engine)
+
+with engine.connect() as conn:
+    flash_REGdf2020 = pd.read_sql(sql=queryREGdf2020, con=conn.connection)
 
 # FLASH CONSTITUENCY
 
@@ -213,8 +232,10 @@ queryCONSTdf2020 = """
 
 """
 
-with engine.connect() as connection:
-    flash_CONSTdf2020 = pd.read_sql(queryCONSTdf2020, con=connection)
+flash_CONSTdf2020 = pd.read_sql(queryCONSTdf2020, con=engine)
+
+with engine.connect() as conn:
+    flash_CONSTdf2020 = pd.read_sql(sql=queryCONSTdf2020, con=conn.connection)
 
 
 
@@ -226,8 +247,10 @@ queryPSdf2020 = """
 
 """
 
-with engine.connect() as connection:
-    flash_PSdf2020 = pd.read_sql(queryPSdf2020, con=connection)
+flash_PSdf2020 = pd.read_sql(queryPSdf2020, con=engine)
+
+with engine.connect() as conn:
+    flash_PSdf2020 = pd.read_sql(sql=queryPSdf2020, con=conn.connection)
 
 flash_REGdf = flash_REGdf2020
 flash_CONSTdf = flash_CONSTdf2020
@@ -315,14 +338,23 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
             """
 
         # Fetch the data for the selected year
-        with engine.connect() as connection:
-            flash_REGdf = pd.read_sql(queryREGdf, con=connection)
 
-        with engine.connect() as connection:
-            flash_CONSTdf = pd.read_sql(queryCONSTdf, con=connection)
+        flash_REGdf = pd.read_sql(queryREGdf, con=engine)
 
-        with engine.connect() as connection:
-            flash_PSdf = pd.read_sql(queryPSdf, con=connection)
+        with engine.connect() as conn:
+            flash_REGdf = pd.read_sql(sql=queryREGdf, con=conn.connection)
+
+
+        flash_CONSTdf = pd.read_sql(queryCONSTdf, con=engine)
+
+        with engine.connect() as conn:
+            flash_CONSTdf = pd.read_sql(sql=queryCONSTdf, con=conn.connection)
+
+
+        flash_PSdf = pd.read_sql(queryPSdf, con=engine)
+
+        with engine.connect() as conn:
+            flash_PSdf = pd.read_sql(sql=queryPSdf, con=conn.connection)
     
 
     #_________________
@@ -368,8 +400,11 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     #     query = query1.format(year=year)
     # else:
     #     query = query2.format(year=year)
-    with engine.connect() as connection:
-        df = pd.read_sql(query, con=connection)
+
+    df = pd.read_sql(query, con=engine)
+
+    with engine.connect() as conn:
+        df = pd.read_sql(sql=query, con=conn.connection)
 
     first_C_column_df = df.columns[df.columns.str.contains('_C')][0]
 
@@ -677,8 +712,10 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
                 query_prev = query2.format(year=prev_year)
 
             # Fetch data for the previous year
-            with engine.connect() as connection:
-                df_prev = pd.read_sql(query_prev, con=connection)
+            df_prev = pd.read_sql(query_prev, con=engine)
+
+            with engine.connect() as conn:
+                df_prev = pd.read_sql(sql=query_prev, con=conn.connection)
 
             df_prev['year_'] = df_prev['year_'].astype(int)
             grouped_prev = df_prev.groupby(['year_', 'office'])
@@ -715,8 +752,10 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
                 query_prev = query2.format(year=prev_year)
 
             # Fetch data for the previous year
-            with engine.connect() as connection:
-                df_prev = pd.read_sql(query_prev, con=connection)
+            df_prev = pd.read_sql(query_prev, con=engine)
+
+            with engine.connect() as conn:
+                df_prev = pd.read_sql(sql=query_prev, con=conn.connection)
 
             df_prev['year_'] = df_prev['year_'].astype(int)
 
@@ -761,9 +800,11 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
                 query_prev = query2.format(year=prev_year)
 
             # Fetch data for the previous year
-            with engine.connect() as connection:
-                df_prev = pd.read_sql(query_prev, con=connection)
-                
+            df_prev = pd.read_sql(query_prev, con=engine)
+
+            with engine.connect() as conn:
+                df_prev = pd.read_sql(sql=query_prev, con=conn.connection)
+
             df_prev['year_'] = df_prev['year_'].astype(int)
 
             # Group data by year, office, and region
