@@ -7,7 +7,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 # Convert static asset files
-python manage.py compress
+
 python manage.py collectstatic --no-input
 
 # Apply any outstanding database migrations
