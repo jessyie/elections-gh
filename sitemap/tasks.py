@@ -51,11 +51,8 @@ def update_year_2024_data(self):
     queryUpdateTime = """
         SELECT * FROM public."time_update"
         """
-
-    updateTime = pd.read_sql(queryUpdateTime, con=engine)
-
-    with engine.connect() as conn:
-        updateTime = pd.read_sql(sql=queryUpdateTime, con=conn.connection)
+    
+    updateTime = pd.read_sql(queryUpdateTime, engine)
 
     if updateTime.empty:
         return "No records found in time_update table."
