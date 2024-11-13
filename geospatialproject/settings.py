@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     'channels'
 ]
 
+WHITENOISE_MIMETYPES = {'.js': 'text/javascript'}
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',
@@ -168,8 +170,14 @@ STATICFILES_FINDERS = [
 # STATIC_URL = 'static/'
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
+
+STATIC_ROOT = BASE_DIR/"staticfiles"
+
+# Extra places for collectstatic to find static files.
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
 
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
