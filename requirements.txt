@@ -207,7 +207,7 @@ six
 sniffio
 snuggs
 soupsieve
-SQLAlchemy
+SQLAlchemy==1.4.46
 SQLAlchemy-JSONField
 SQLAlchemy-Utils
 sqlparse
