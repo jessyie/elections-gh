@@ -1,4 +1,6 @@
 {% extends 'partials/base.html' %}
+{% load static %}
+
 
 {% block content %}
 
@@ -269,22 +271,21 @@
             </div>
                                   
         </div>
-        <div class="col-md-3" id="chart-containerB">
-          <h5 id="messa" style="font-size: 11px; margin-bottom: 16px;">Only 2020 Flash Data-Violence Incidents</h5>
-          <div id="map-container2">
-            <div class="wrapper">
-              <!--<div class="folium-map" id="map_name_1"></div>-->
-              <div id="map2" style="border-radius: 15px;"></div>
-
-              
-              <button id="reset-map2" onclick="resetMap2()" style="position: absolute; top: 158px; left: 12px; z-index: 1000; font-size: large;"><i class="fa-solid fa-rotate-right fa-sm"></i><span class="hover-text3_reset">Reset</span></button> 
-            
-              <div id="watermark-container">
-                <p class="watermark">Geography @ KNUST</p>
+        <div class="col-md-3" id="chart-containerCard">
+            <h5 style="font-size: 11px;"></h5>
+            <div class="card" id="container3b">
+              <div class="card-header">
+                Information Board
               </div>
-            </div>
-            
-          </div>
+              <ul class="list-group list-group-flush" id="card-content">
+                <li class="list-group-item" id="default-item">
+                  <img src="{% static 'images2/ecpic.jpeg' %}" id="default-image" alt="No Selection">
+                </li> <!-- Default content -->
+              </ul>
+              </div>
+            <!-- <div id="watermark-container">
+                <p class="watermark">Geography @ KNUST</p>
+            </div>  -->  
 
         </div>
 
@@ -320,7 +321,7 @@
 
         </div>
 
-        <div class="col-md-3" id="chart-container" style="margin-top: 10px">
+        <div class="col-md-3" id="chart-containerCensus">
             <select id='censusSelection' class="btn-dark" style="font-size: 9px;border-style:solid;border-radius: 4px;">
                         <option id='censusOption' selected value="">Population Demographics</option>
                         <option value="Total_Pop">Total Pop</option>
@@ -363,19 +364,22 @@
 
         </div>
 
-        <div class="col-md-3" id="chart-container" style="margin-top: 23px">
-            <h5 style="font-size: 11px;"></h5>
-            <div class="card" id="container3b">
-              <div class="card-header">
-                Information Board
-              </div>
-              <ul class="list-group list-group-flush" id="card-content">
-                <li class="list-group-item" id="default-item">No selection from Map</li> <!-- Default content -->
-              </ul>
-              </div>
-            <!-- <div id="watermark-container">
+        <div class="col-md-3" id="chart-containerB">
+          <h5 id="messa" style="font-size: 11px; margin-bottom: 16px;">Only 2020 Flash Data-Violence Incidents</h5>
+          <div id="map-container2">
+            <div class="wrapper">
+              <!--<div class="folium-map" id="map_name_1"></div>-->
+              <div id="map2" style="border-radius: 15px;"></div>
+
+              
+              <button id="reset-map2" onclick="resetMap2()" style="position: absolute; top: 158px; left: 12px; z-index: 1000; font-size: large;"><i class="fa-solid fa-rotate-right fa-sm"></i><span class="hover-text3_reset">Reset</span></button> 
+            
+              <div id="watermark-container">
                 <p class="watermark">Geography @ KNUST</p>
-            </div>  -->  
+              </div>
+            </div>
+            
+          </div>
 
         </div>
 

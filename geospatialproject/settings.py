@@ -206,8 +206,8 @@ CELERY_TIMEZONE = 'Africa/Accra'
 # RT
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}  # 1 hour
-CELERY_TASK_RESULT_EXPIRES = 3600  # 1 hour
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 25}  # 25 seconds
+CELERY_TASK_RESULT_EXPIRES = 25  # 25 seconds
 
 # Django Channels settings
 # RT

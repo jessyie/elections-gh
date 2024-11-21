@@ -19,9 +19,9 @@ app.config_from_object(settings, namespace='CELERY')
 
 # CELERY BEAT SETTINGS
 app.conf.beat_schedule = {
-    'update-2024-data-every-1-minute': {
+    'update-2024-data-every-5-seconds': {
         'task': 'sitemap.tasks.update_year_2024_data',
-        'schedule': 60.0,  # every 60 seconds
+        'schedule': 5.0,  # every 5 seconds
     },
 }
 

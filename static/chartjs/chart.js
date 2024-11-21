@@ -791,11 +791,13 @@ var polling_stations = JSON.parse(document.getElementById('GHMap_PS_json').textC
 
                 // Iterate over feature properties to find previous winners
                 for (var key in feature.properties) {
-                    if (key.startsWith("Winner_") && key !== "Winner_Percentage") {
+                    if (key.startsWith("Winner_") && !key.includes("Percentage")) {
                         var year = key.split("_")[1];
+                        var percentageKey = `Winner_Percentage_${year}`;
+                        var percentage = feature.properties[percentageKey] || 0;
                         // Convert year to a number for sorting purposes, except for '2009'
                         var numericYear = (year === '2009') ? 2008.5 : parseFloat(year);
-                        previousWinners.push({ year: year, numericYear: numericYear, value: feature.properties[key] });
+                        previousWinners.push({ year: year, numericYear: numericYear, value: feature.properties[key], percentage: percentage });
                     }
                 }
 
@@ -808,7 +810,7 @@ var polling_stations = JSON.parse(document.getElementById('GHMap_PS_json').textC
                 previousWinners.forEach(function(item) {
                     // Rename year '2009' to '2008 Runoff' after sorting
                     var displayYear = (item.year === '2009') ? '2008 Runoff' : item.year;
-                    tooltipContent += "<br>Winner " + displayYear + ": " + item.value;
+                    tooltipContent += "<br>Winner " + displayYear + ": " + item.value + " " + item.percentage + "%";
                 });
 
                 // Bind the constructed tooltip to the layer
@@ -828,7 +830,79 @@ var polling_stations = JSON.parse(document.getElementById('GHMap_PS_json').textC
             return { fillColor: color, color: 'black', weight: 1, fillOpacity: 0.7 };
         }
     });
+
 }
+
+
+// function createValidVotesGeoJSON(parliament10) {
+//     return L.geoJSON(parliament10, {
+//         onEachFeature: function (feature, layer) {
+//             if (feature.properties) {
+//                 // Initial tooltip content
+//                 var tooltipContent = "<strong>Region:</strong> " + feature.properties['region'] + "<br>" +
+//                     "<strong>Winner:</strong> " + feature.properties['Winner'] + " (" + feature.properties['Winner_Percentage'] + "%)" + "<br>" +
+//                     "<strong>Second place:</strong> " + feature.properties['Second_Highest_Value_Name'] + " (" + feature.properties['Second_Highest_Percentage'] + "%)";
+                
+//                 // Array to store previous winners
+//                 var previousWinners = [];
+
+//                 // Iterate over feature properties to find previous winners
+//                 for (var key in feature.properties) {
+//                     if (key.startsWith("Winner_") && !key.includes("Percentage")) {
+//                         var year = key.split("_")[1];
+//                         var percentageKey = `Winner_Percentage_${year}`;
+//                         var percentage = feature.properties[percentageKey] || 0; // Default to "N/A" if percentage is missing
+                        
+//                         // Push the previous winners along with their percentages
+//                         previousWinners.push({
+//                             year: year,
+//                             winner: feature.properties[key],
+//                             percentage: percentage
+//                         });
+//                     }
+//                 }
+
+//                 // Sort previous winners by year in descending order
+//                 previousWinners.sort(function (a, b) {
+//                     return parseFloat(b.year) - parseFloat(a.year);
+//                 });
+
+//                 // Add previous winners to the tooltip
+//                 previousWinners.forEach(function (item) {
+//                     tooltipContent += "<br><strong>Winner " + item.year + ":</strong> " + item.winner + " " + item.percentage + "%";
+//                 });
+
+//                 // Construct tooltip content from sorted previous winners
+//                 previousWinners.forEach(function(item) {
+//                     // Rename year '2009' to '2008 Runoff' after sorting
+//                     var displayYear = (item.year === '2009') ? '2008 Runoff' : item.year;
+//                     tooltipContent += "<br>Winner " + displayYear + ": " + item.value;
+//                 });
+
+//                 // Bind the tooltip with formatted HTML content
+//                 layer.bindTooltip(tooltipContent, {
+//                     className: 'custom-tooltip', // Optional: Add styling if needed
+//                     direction: 'auto',
+//                     sticky: true,
+//                     opacity: 0.9
+//                 });
+//             }
+//         },
+//         style: function (feature) {
+//             var value = feature.properties['Values_map'];
+//             var color;
+//             if (value === 8) {
+//                 color = 'green';
+//             } else if (value === 10) {
+//                 color = 'blue';
+//             } else {
+//                 color = 'red';
+//             }
+//             return { fillColor: color, color: 'black', weight: 1, fillOpacity: 0.7 };
+//         }
+//     });
+// }
+
 
 
     var parliament10 = JSON.parse(document.getElementById('parliament10').textContent)
@@ -948,9 +1022,11 @@ function createValidVotes_ConstGeoJSON(parliamentConst16CONST2) {
 
                 for (var key in feature.properties) {
                     // Look for keys that start with "Winner_" but exclude "Winner_Percentage"
-                    if (key.startsWith("Winner_") && key !== "Winner_Percentage") {
+                    if (key.startsWith("Winner_") && !key.includes("Percentage")) {
                         var year = key.split("_")[1];
-                        previousWinners.push({ year: year, value: feature.properties[key] });
+                        var percentageKey = `Winner_Percentage_${year}`;
+                        var percentage = feature.properties[percentageKey] || 0;
+                        previousWinners.push({ year: year, value: feature.properties[key], percentage: percentage });
                     }
                 }
 
@@ -968,7 +1044,7 @@ function createValidVotes_ConstGeoJSON(parliamentConst16CONST2) {
 
                 // Add sorted previous winners to the tooltip content
                 previousWinners.forEach(function(item) {
-                    tooltipContent += "<br>Winner " + item.year + ": " + item.value;
+                    tooltipContent += "<br>Winner " + item.year + ": " + item.value + " " + item.percentage + "%";
                 });
 
                 layer.bindTooltip(tooltipContent);
@@ -1534,7 +1610,7 @@ for (var layerName in overlayMaps2) {
 }
 
 // Set the default card content when no feature is clicked
-updateCardContent('No selection from Map');
+//updateCardContent('No selection from Map');
 
 
 // Bind click events to dynamically added layers (like presidentialConst_16_REG2 and presidentialConst_16_REG)
@@ -1580,11 +1656,13 @@ function jsoncreateValidVotesGeoJSON(merged_GHMap2A) {
 
                 // Iterate over feature properties to find previous winners
                 for (var key in feature.properties) {
-                    if (key.startsWith("Winner_") && key !== "Winner_Percentage") {
+                    if (key.startsWith("Winner_") && !key.includes("Percentage")) {
                         var year = key.split("_")[1];
+                        var percentageKey = `Winner_Percentage_${year}`;
+                        var percentage = feature.properties[percentageKey] || 0;
                         // Convert year to a number for sorting purposes, except for '2009'
                         var numericYear = (year === '2009') ? 2008.5 : parseFloat(year);
-                        previousWinners.push({ year: year, numericYear: numericYear, value: feature.properties[key] });
+                        previousWinners.push({ year: year, numericYear: numericYear, value: feature.properties[key], percentage: percentage });
                     }
                 }
 
@@ -1597,7 +1675,7 @@ function jsoncreateValidVotesGeoJSON(merged_GHMap2A) {
                 previousWinners.forEach(function(item) {
                     // Rename year '2009' to '2008 Runoff' after sorting
                     var displayYear = (item.year === '2009') ? '2008 Runoff' : item.year;
-                    tooltipContent += "<br>Winner " + displayYear + ": " + item.value;
+                    tooltipContent += "<br>Winner " + displayYear + ": " + item.value + " " + item.percentage + "%";
                 });
 
                 // Bind the constructed tooltip to the layer
@@ -1770,9 +1848,11 @@ function jsoncreateValidVotes_ConstGeoJSON(merged2_GHMap2ConstCONST2) {
 
                 for (var key in feature.properties) {
                     // Look for keys that start with "Winner_" but exclude "Winner_Percentage"
-                    if (key.startsWith("Winner_") && key !== "Winner_Percentage") {
+                    if (key.startsWith("Winner_") && !key.includes("Percentage")) {
                         var year = key.split("_")[1];
-                        previousWinners.push({ year: year, value: feature.properties[key] });
+                        var percentageKey = `Winner_Percentage_${year}`;
+                        var percentage = feature.properties[percentageKey] || 0;
+                        previousWinners.push({ year: year, value: feature.properties[key], percentage: percentage });
                     }
                 }
 
@@ -1790,7 +1870,7 @@ function jsoncreateValidVotes_ConstGeoJSON(merged2_GHMap2ConstCONST2) {
 
                 // Add sorted previous winners to the tooltip content
                 previousWinners.forEach(function(item) {
-                    tooltipContent += "<br>Winner " + item.year + ": " + item.value;
+                    tooltipContent += "<br>Winner " + item.year + ": " + item.value + " " + item.percentage + "%";
                 });
 
                 layer.bindTooltip(tooltipContent);
@@ -2216,7 +2296,7 @@ function updateChart(data, selectedYear) {
     }
 
     // Set the default card content when no feature is clicked
-    updateCardContent('No selection from Map');
+    // updateCardContent('No selection from Map');
 
 
     //////////// END OF HIGHLIGHT //////
@@ -3129,7 +3209,7 @@ function updateCharts(selectedYear, region, census, electoral) {
     }
 
     // Set the default card content when no feature is clicked
-    updateCardContent('No selection from Map');
+    // updateCardContent('No selection from Map');
 
 
     //////////// END OF HIGHLIGHT //////
@@ -3716,7 +3796,7 @@ function changeChartYear() {
   const censusSelector = document.querySelector("#censusSelection")
   const electoralSelector = document.querySelector("#electoralSelection1")
   
-  activeYear = yearSelector.value || '2020'
+  activeYear = yearSelector.value || '2024'
   //activeRegion = regionSelector.value 
   activeCencus = censusSelector.value 
   activeElectoral = electoralSelector.value 
@@ -4087,7 +4167,7 @@ function updateChartsRegions(selectedYear, region, census, electoral) {
     }
 
     // Set the default card content when no feature is clicked
-    updateCardContent('No selection from Map');
+    // updateCardContent('No selection from Map');
 
     //////////// END OF HIGHLIGHT //////
 
@@ -4663,7 +4743,7 @@ function changeChartYearRegions() {
   const censusSelector = document.querySelector("#censusSelection")
   const electoralSelector = document.querySelector("#electoralSelection1")
   
-  activeYear = yearSelector.value || '2020'
+  activeYear = yearSelector.value || '2024'
   //activeRegion = regionSelector.value 
   activeCencus = censusSelector.value 
   activeElectoral = electoralSelector.value 
@@ -4979,7 +5059,7 @@ function updateCharts2(year, selectedRegion, census, electoral) {
     }
 
     // Set the default card content when no feature is clicked
-    updateCardContent('No selection from Map');
+    // updateCardContent('No selection from Map');
 
     //////////// END OF HIGHLIGHT //////
 
@@ -5545,7 +5625,7 @@ function changeChartRegion() {
   const electoralSelector = document.querySelector("#electoralSelection1")
  
   //activeRegion = regionSelector.value || 'Ashanti'
-  activeYear = yearSelector.value ||'2020'
+  activeYear = yearSelector.value ||'2024'
   activeCencus = censusSelector.value 
   activeElectoral = electoralSelector.value 
 
@@ -5796,7 +5876,7 @@ function changeChart_YearCensus() {
 
   activeCensus = censusSelector.value || 'Total_Pop'
   //activeRegion = regionSelector.value
-  activeYear = yearSelector.value ||'2020'
+  activeYear = yearSelector.value ||'2024'
   activeElectoral = electoralSelector.value
 
   // List of valid regions
@@ -5830,7 +5910,7 @@ function changeChart_RegionalCensus() {
 
   activeCensus = censusSelector.value || 'Total_Pop'
   //activeRegion = regionSelector.value || 'Ashanti'
-  activeYear = yearSelector.value || '2020'
+  activeYear = yearSelector.value || '2024'
   //activeElectoral = electoralSelector.value
 
   // List of valid regions
@@ -6084,7 +6164,7 @@ function changeChart_YearElectoral1() {
 
   activeElectoral = electoralSelector.value || 'valid_votes'
   //activeRegion = regionSelector.value 
-  activeYear = yearSelector.value || '2020'
+  activeYear = yearSelector.value || '2024'
   activeCencus = censusSelector.value 
 
   // List of valid regions
@@ -6119,7 +6199,7 @@ function changeChart_RegionalElectoral1() {
 
   activeElectoral = electoralSelector.value || 'valid_votes'
   //activeRegion = regionSelector.value || 'Ashanti'
-  activeYear = yearSelector.value || '2020'
+  activeYear = yearSelector.value || '2024'
   //activeCencus = censusSelector.value 
 
   // List of valid regions
@@ -6374,7 +6454,7 @@ function changeChart_YearElectoral2() {
 
   activeElectoral = electoralSelector.value || 'valid_votes'
   //activeRegion = regionSelector.value 
-  activeYear = yearSelector.value || '2020'
+  activeYear = yearSelector.value || '2024'
   activeCensus = censusSelector.value 
 
   // List of valid regions
@@ -6408,7 +6488,7 @@ function changeChart_RegionalElectoral2() {
 
   activeElectoral = electoralSelector.value || 'valid_votes'
   //activeRegion = regionSelector.value || 'Ashanti'
-  activeYear = yearSelector.value || '2020'
+  activeYear = yearSelector.value || '2024'
   //activeCensus = censusSelector.value 
 
   // List of valid regions
@@ -6899,6 +6979,13 @@ document.getElementById('yearSelection').addEventListener('change', function() {
 
     // Call function to update charts based on year
     changeChartYear();
+    var cardContent = document.getElementById('card-content');
+    cardContent.innerHTML = '';
+    cardContent.innerHTML = `
+        <li class="list-group-item" id="default-item">
+            <img src="${defaultImagePath}" id="default-image" alt="No Selection">
+        </li>
+    `;
 });
 
 // Refetch button to fetch data again based on the selected year

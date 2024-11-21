@@ -68,8 +68,7 @@ def update_year_2024_data(self):
         from .views import initialise_chart  # Import your function to fetch data
         data = initialise_chart(year="2024")
 
-        # Cache the new data and update the last fetched time
-        cache.set("data_2024", data, timeout=60 * 15)
+        # Update the last fetched time in cache (but do not cache the data itself)
         cache.set("last_fetched_time", current_time, timeout=60 * 15)
 
         # Use Django Channels to broadcast the data update

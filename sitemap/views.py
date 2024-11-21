@@ -276,7 +276,7 @@ GHMap_PS_json = gpd.read_file(os.path.join(data_loc_str, 'images', 'new_ps', 'ne
     # dfGroupNew1 = groupedNewA.get_group((year, 'Parliament', region))
     # dfGroupNew1B = groupedNewA.get_group((year, 'Presidential First Round', region))
 
-def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electoral='valid_votes'):
+def initialise_chart(year = '2024', region='Ashanti', census='Total_Pop', electoral='valid_votes'):
 
     # RT
     # from .tasks import update_year_2024_data
@@ -685,13 +685,19 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
             # Get the winners for this previous year
             values_dict_prev = total_valid_votes_parties_levelBased(dfRegions_prev, dfGroupA_prev, "RegName")[0]
-
+            #print(values_dict_prev)
             # Merge the previous year's winners with the current year's values_dict
             values_dict[f"Winner_{prev_year}"] = values_dict_prev['Winner']
 
             # Replace NaN values with 'No winner'
             values_dict[f"Winner_{prev_year}"] = values_dict[f"Winner_{prev_year}"].fillna("No winner")
 
+            # Merge the previous year's winner percentage with the current year's values_dict
+            values_dict[f"Winner_Percentage_{prev_year}"] = values_dict_prev['Winner_Percentage']
+
+            # Replace NaN values with zero
+            values_dict[f"Winner_Percentage_{prev_year}"] = values_dict[f"Winner_Percentage_{prev_year}"].fillna(0)
+            #print(values_dict)
 
         return values_dict
 
@@ -729,6 +735,12 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
                 # Replace NaN values with 'No winner'
                 values_dict[f"Winner_{prev_year}"] = values_dict[f"Winner_{prev_year}"].fillna("No winner")
+
+                # Merge the previous year's winner percentage with the current year's values_dict
+                values_dict[f"Winner_Percentage_{prev_year}"] = values_dict_prev['Winner_Percentage']
+
+                # Replace NaN values with zero
+                values_dict[f"Winner_Percentage_{prev_year}"] = values_dict[f"Winner_Percentage_{prev_year}"].fillna(0)
                 
             else:
                 # Handle missing group, e.g., log, skip, or assign default values
@@ -773,6 +785,13 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
 
                 # Replace NaN values with 'No winner'
                 values_dict[f"Winner_{prev_year}"] = values_dict[f"Winner_{prev_year}"].fillna("No winner")
+
+                # Merge the previous year's winner percentage with the current year's values_dict
+                values_dict[f"Winner_Percentage_{prev_year}"] = values_dict_prev['Winner_Percentage']
+
+                # Replace NaN values with zero
+                values_dict[f"Winner_Percentage_{prev_year}"] = values_dict[f"Winner_Percentage_{prev_year}"].fillna(0)
+
             else:
                 # Handle missing group, e.g., log, skip, or assign default values
                 print(f"No data for year: {prev_year}, office: {office}, region: {region}")
@@ -1914,64 +1933,64 @@ def initialise_chart(year = '2020', region='Ashanti', census='Total_Pop', electo
     return context  
 
 # Map
-@login_required(login_url='login')                     
+#@login_required(login_url='login')                     
 def map(request):
     data = initialise_chart()
     # data['m'] = m
     return render(request, 'map.html', data)
 
 
-def SignupPage(request):
-    if request.method == 'POST':
-        uname = request.POST.get('username')
-        email = request.POST.get('email')
-        pass1 = request.POST.get('password1')
-        pass2 = request.POST.get('password2')
+# def SignupPage(request):
+#     if request.method == 'POST':
+#         uname = request.POST.get('username')
+#         email = request.POST.get('email')
+#         pass1 = request.POST.get('password1')
+#         pass2 = request.POST.get('password2')
 
-        if pass1 != pass2:
-            messages.error(request, "Your password and confirm password are not the same!")
-            return redirect('signup')  # Redirect back to the signup page
-        else:
-            # Check if username already exists
-            if User.objects.filter(username=uname).exists():
-                messages.error(request, "Username already exists!")
-                return redirect('signup')
+#         if pass1 != pass2:
+#             messages.error(request, "Your password and confirm password are not the same!")
+#             return redirect('signup')  # Redirect back to the signup page
+#         else:
+#             # Check if username already exists
+#             if User.objects.filter(username=uname).exists():
+#                 messages.error(request, "Username already exists!")
+#                 return redirect('signup')
 
-            # Create and save the user
-            my_user = User.objects.create_user(uname, email, pass1)
-            my_user.save()
-            messages.success(request, "Account created successfully!")
-            return redirect('login')
+#             # Create and save the user
+#             my_user = User.objects.create_user(uname, email, pass1)
+#             my_user.save()
+#             messages.success(request, "Account created successfully!")
+#             return redirect('login')
 
-    return render(request, 'signup.html')
+#     return render(request, 'signup.html')
 
-def LoginPage(request):
-    if request.method=='POST':
-        username=request.POST.get('username')
-        pass1=request.POST.get('pass')
-        user=authenticate(request,username=username,password=pass1)
-        if user is not None:
-            login(request,user)
-            return redirect('map')
-        else:
-            messages.error(request, "Username or Password is incorrect!!!")
-            return redirect('login')  
+# def LoginPage(request):
+#     if request.method=='POST':
+#         username=request.POST.get('username')
+#         pass1=request.POST.get('pass')
+#         user=authenticate(request,username=username,password=pass1)
+#         if user is not None:
+#             login(request,user)
+#             return redirect('map')
+#         else:
+#             messages.error(request, "Username or Password is incorrect!!!")
+#             return redirect('login')  
 
-    return render (request,'login.html')
+#     return render (request,'login.html')
 
-def LogoutPage(request):
-    logout(request)
-    return redirect('login')
+# def LogoutPage(request):
+#     logout(request)
+#     return redirect('login')
 
 # Routes
-@login_required(login_url='login') 
+#@login_required(login_url='login') 
 def my_routing(request):
     
     return render(request, 'index.html')
 
 
 
-@login_required(login_url='login') 
+#@login_required(login_url='login') 
 def update_charts(request):
     
     #RT
@@ -1987,8 +2006,10 @@ def update_charts(request):
     # Generate a unique cache key based on the filter parameters
     cache_key = f"data_{selected_year}_{selected_region}_{selected_census}_{selected_electoral}".replace(" ", "_")
 
-    # Check if data is already cached
-    data = cache.get(cache_key)
+    # Check if data is already cached, only for years other than 2024
+    data = None
+    if selected_year != "2024":
+        data = cache.get(cache_key)
 
     if not data:
         # Data not in cache, perform the data processing
@@ -2056,14 +2077,14 @@ def update_charts(request):
         #     # Combination: All filters
         #     data = initialise_chart(year=selected_year, region=selected_region, census=selected_census, electoral=selected_electoral)
         
-        # Store the result in the cache for future use
-        cache.set(cache_key, data, timeout=60*15)  # Cache for 15 minutes
+        if selected_year != "2024":
+            cache.set(cache_key, data, timeout=60 * 15)  # Cache for 15 minutes
 
     return JsonResponse(data, safe=False)
 
 
 
-@login_required(login_url='login') 
+#@login_required(login_url='login') 
 def selectCensus(request):
     census = request.GET.get('census')
     year = request.GET.get('year')
@@ -2144,7 +2165,7 @@ def selectCensus(request):
 # ////////////////////////////////////////////////////////////////////////
 
 # (1) Chart 1
-@login_required(login_url='login') 
+#@login_required(login_url='login') 
 def selectElectoral1(request):
     electoral = request.GET.get('electoral')
     year = request.GET.get('year')
@@ -2153,10 +2174,12 @@ def selectElectoral1(request):
     # Generate a unique cache key based on the filter parameters
     cache_key = f"data_{year}_{region}_{electoral}".replace(" ", "_")
 
-    # Check if data is already cached
-    data = cache.get(cache_key)
+    # Check if data is already cached, only for years other than 2024
+    context = None
+    if year != "2024":
+        context = cache.get(cache_key)
 
-    if not data:
+    if not context:
         # Data not in cache, perform the data processing
         # filename3 = f'District_pop_demographics{year}.csv'
         # path3 = os.path.join('path_to_your_data_directory', 'EDATA', filename3)
@@ -2268,11 +2291,9 @@ def selectElectoral1(request):
         
         }
 
-        # Store the result in the cache for future use
-        cache.set(cache_key, context, timeout=60*15)  # Cache for 15 minutes
-    else:
-        # Data is already cached, use the cached data
-        context = data
+        # Store the result in the cache only if the year is not 2024
+        if year != "2024":
+            cache.set(cache_key, context, timeout=60 * 15)  # Cache for 15 minutes
 
     return JsonResponse(context, safe=False)
 

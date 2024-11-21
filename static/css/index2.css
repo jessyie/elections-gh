@@ -381,6 +381,10 @@ textarea{
 #chart-container {
     background-color: #e9ecef
 }
+#chart-containerCard {
+    background-color: #e9ecef
+
+}
 #chart-containerA {
     left: 7px
 }
@@ -445,8 +449,9 @@ textarea{
     left: 92px;
 }
 #card-content {
-    max-height: 284px;       /* Limits height of the list */
+    max-height: 411px;       /* Limits height of the list */
     overflow-y: auto;        /* Enables vertical scrolling */
+    width: 24vw;
 }
 
 #card-content .list-group-item {
@@ -476,6 +481,10 @@ textarea{
     background: #555;         /* Color on hover */
 }
 
+#chart-containerCensus {
+    background-color: #e9ecef
+}
+
 @media screen and (max-width: 600px)
 {
     #nano_1 {
@@ -492,27 +501,27 @@ textarea{
         left: 1vw;
     }
     #regionSelection {
-    font-size: 2vw;
-    margin-left: 7.7vw;
-    margin-top: -1.2vh;
+        font-size: 2vw;
+        margin-left: 7.7vw;
+        margin-top: -1.2vh;
     }
     #yearSelection {
-    font-size: 1.5vw;
-    margin-right: 1vw;
-    margin-left: -25vw;
-    margin-top: -1.2vh;
+        font-size: 1.5vw;
+        margin-right: 1vw;
+        margin-left: -25vw;
+        margin-top: -1.2vh;
     }
     #title_1 {
-    border-left-style: inset;
-    border-left-width: 2px;
-    border-right-style: outset;
-    border-right-width: 2px;
-    padding-left: 2vw;
-    padding-right: 2vw;
-    margin-right: 24vw;
-    height: 3vh;
-    margin-bottom: 1vh;
-    margin-top: -0.5vh;
+        border-left-style: inset;
+        border-left-width: 2px;
+        border-right-style: outset;
+        border-right-width: 2px;
+        padding-left: 2vw;
+        padding-right: 2vw;
+        margin-right: 24vw;
+        height: 3vh;
+        margin-bottom: 1vh;
+        margin-top: -0.5vh;
     }
     .title_1A {
         margin-top: -3.5vh;
@@ -531,11 +540,11 @@ textarea{
     }
     #chart-containerA {
         left: -1.5vw;
-        top: 61vh;
+        top: 62vh;
     }
     #chart-containerB {
-        left: -1.5vw;
-        top: 61vh;
+        left: -2.5vw;
+        top: 0vh;
     }
     /*#chart-container1b {
         left: -1.5vw;
@@ -543,7 +552,7 @@ textarea{
     }*/
     #chart-container1b {
         left: -1.5vw;
-        bottom: 122vh;
+        bottom: 120vh;
         margin-top: 3vh;
     }
     #map-container {
@@ -617,9 +626,9 @@ textarea{
         margin-left: -5px;
     }
     #md1 {
-    margin-left: -1vw;
-    margin-top: 86vh;
-    width:96vw;
+        margin-left: -1vw;
+        margin-top: 86vh;
+        width:96vw;
     }
     #about2 {
         font-size: large;
@@ -698,6 +707,37 @@ textarea{
         top: 5.5vh;
         left: 66vw;
     }
+    #chart-containerCard {
+        top: 62vh;
+        margin-top: 0px;
+        left: -2.2vw;
+
+    }
+    #chart-container1cc {
+        left: -7px;
+    /* margin-top: 10px; */
+    }
+    #chart-containerCensus {
+        margin-top: 10px; 
+        margin-left: 0.2vw;
+        left: -2.5vw;
+    }
+    #chart-container1dd {
+        background-color: #e9ecef;
+        left: -8px;
+        margin-top: 10px;
+    }
+    #default-item {
+        position: absolute;
+        height: 51vh;
+        width: 99vw;
+        left: 0vw;
+    }
+    #default-image {
+        position: absolute;
+        height: 48vh;
+        left: 12vw;
+    }
 
     
 
@@ -711,26 +751,26 @@ textarea{
         display: none;
     }
     #regionSelection {
-    font-size: 2vw;
-    margin-left: 1vw;
-    margin-top: -0.2vh;
+        font-size: 2vw;
+        margin-left: 1vw;
+        margin-top: -0.2vh;
     }
     #yearSelection {
-    font-size: 1.5vw;
-    margin-left: -6vw;
-    margin-top: -0.5vh;
+        font-size: 1.5vw;
+        margin-left: -6vw;
+        margin-top: -0.5vh;
     }
     #title_1 {
-    border-left-style: inset;
-    border-left-width: 2px;
-    border-right-style: outset;
-    border-right-width: 2px;
-    padding-left: 2vw;
-    padding-right: 2vw;
-    margin-left: -4vw;
-    height: 3vh;
-    margin-bottom: 2vh;
-    margin-top: 1.5vh;
+        border-left-style: inset;
+        border-left-width: 2px;
+        border-right-style: outset;
+        border-right-width: 2px;
+        padding-left: 2vw;
+        padding-right: 2vw;
+        margin-left: -4vw;
+        height: 3vh;
+        margin-bottom: 2vh;
+        margin-top: 1.5vh;
     }
     .title_1A {
         margin-top: -2vh;
@@ -797,9 +837,9 @@ textarea{
         margin-left: -5vw;
     }
     #md1 {
-    margin-left: -43vw;
-    margin-top: 37vh;
-    width: 44vw;
+        margin-left: -43vw;
+        margin-top: 37vh;
+        width: 44vw;
     }
     #about2 {
         font-size: large;
@@ -858,6 +898,16 @@ textarea{
         top: 0.5vh;
         left: 0vw;
     }
+    #card-content {
+        max-height: 703px;
+        overflow-y: auto;
+    }
+    #default-image {
+        position: absolute;
+        width: 225px;
+        height: 671px;
+        left: 1vw;
+    }
 
 
 }
@@ -915,7 +965,7 @@ textarea{
         height: 57vh;
     }
     #container1b {
-         margin-left: -0.5vw;
+        margin-left: -0.5vw;
         width: 24vw;
         height: 57vh;
     }
@@ -925,8 +975,8 @@ textarea{
         height: 57vh;
     }
     #map-container2 {
-        margin-left: -2.3vw;
-        width: 24.5vw;
+        margin-left: -2.8vw;
+        width: 25vw;
         height: 56.5vh;
     }
     #container3 {
@@ -941,7 +991,7 @@ textarea{
     }
     #container3b {
         margin-left: -1.6vw;
-        width: 26vw;
+        width: 34vw;
         height: 57vh;
     }
     #map_name_1 {
@@ -987,6 +1037,30 @@ textarea{
         position: relative;
         font-size: xx-small;
         top: 0.5vh;
+    }
+    #chart-containerB {
+        margin-top: 1.3vh;
+    }
+    #chart-container1dd {
+        margin-left: -0.2vw;
+    }
+    #chart-containerCard {
+        margin-top: 9px; 
+        left: 1.8vw;
+
+    }
+    #chart-containerCensus {
+        margin-top: 10px; 
+        margin-left: 0.2vw;
+    }
+    #default-item{
+        height: 51vh;
+    }
+    #default-image {
+        position: absolute;
+        width: 193px;
+        height: 260px;
+        left: 3.5vw;
     }
 
 
