@@ -195,7 +195,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # RT
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379'  # Redis as the broker
+# when deploying or in production, use this cerlery_broker_url
+CELERY_BROKER_URL = os.getenv('REDIS_URL')
+#e else use this in development
+#CELERY_BROKER_URL = 'redis://127.0.0.1:6379'  # Redis as the broker
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
@@ -216,7 +219,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [os.getenv('REDIS_URL', 'redis://localhost:6379')],
         },
     },
 }
