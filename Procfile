@@ -1,4 +1,4 @@
 release: python manage.py migrate
-web: daphne -p 8001 geospatialproject.asgi:application
+web: web: daphne -p $PORT geospatialproject.asgi:application
 celery: celery -A geospatialproject worker --pool=solo -l info
 celerybeat: celery -A geospatialproject beat -l info
