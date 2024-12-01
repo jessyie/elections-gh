@@ -1968,11 +1968,7 @@ function loadChartData(selectedYear, region, census, electoral) {
     if (selectedYear === "2024") {
         if (socket === null) {
 
-            const socketUrl = window.location.protocol === "https:" ?
-            "wss://sitemap.onrender.com/ws/data-updates/" :
-            "ws://127.0.0.1:8001/ws/data-updates/";
-
-            socket = new WebSocket(socketUrl);
+            socket = new WebSocket("wss://sitemap.onrender.com/ws/data-updates/");
 
             // WebSocket open event
             socket.onopen = function() {
