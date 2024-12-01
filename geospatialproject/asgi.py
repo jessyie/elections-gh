@@ -17,17 +17,18 @@ https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
 
 # RT
 import os
-
+import django
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.auth import AuthMiddlewareStack
-from sitemap.routing import websocket_urlpatterns
-from sitemap import consumers
+
+#now
+#from sitemap import consumers
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'geospatialproject.settings')
-
+django.setup()
 #application = get_asgi_application()
-
+from channels.auth import AuthMiddleware, AuthMiddlewareStack
+from sitemap.routing import websocket_urlpatterns
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(

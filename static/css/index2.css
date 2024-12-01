@@ -738,6 +738,9 @@ textarea{
         height: 48vh;
         left: 12vw;
     }
+    #card-content {
+        width: 100%;
+    }
 
     
 

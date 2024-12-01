@@ -17,6 +17,7 @@
   <!--<link rel="stylesheet" href="https://unpkg.com/leaflet@latest/dist/leaflet.css" />-->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
   <!--<link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@latest/Control.FullScreen.css"/>-->
+  <link rel="icon" type="image/x-icon" href="{% static 'images2/favicon.ico' %}">
 
 
   <!-- Bootstrap CSS -->
@@ -99,7 +100,7 @@
           ABOUT
         </button>
         <a class="navbar-brand item3" id="nano_2" href="#">PARLIAMENT</a>
-        <a href="#" class="btn btn-primary" id="logout1">Logout</a>
+        <a href="{% url 'login' %" class="btn btn-primary" id="logout1">Logout</a>
       </div>
       
 
@@ -132,6 +133,9 @@
     crossorigin="anonymous"></script>
   <script>
     var defaultImagePath = "{% static 'images2/ecpic.jpeg' %}";
+  </script>
+  <script>
+    const staticBaseUrl = "{% static '' %}";
   </script>
   {% compress js %}
   <script type="text/javascript" src="{% static 'chartjs/chart.js' %}"></script>
@@ -379,7 +383,7 @@ window.onload = function() {
       yAxis: {
         min: 0,
         title: {
-          text: 'Total Valid Votes',
+          text: 'Total Constituency Wins',
           align: 'high'
         },
         labels: {
@@ -458,7 +462,7 @@ window.onload = function() {
         enabled: false
       },
       series: [{
-        name: 'Data',
+        name: 'Constituency Wins',
         data: {{ count_y | safe }}
       }]
     });
@@ -487,7 +491,7 @@ window.onload = function() {
           enabled: true
         },
         title: {
-          text: 'Regions'
+          text: 'Parties'
         },
         gridLineWidth: 1,
         lineWidth: 0
@@ -577,7 +581,7 @@ window.onload = function() {
         enabled: false
       },
       series: [{
-        name: 'Data',
+        name: 'Valid Votes',
         data: {{ graph2BYParties | safe }},
         color: '#f0a754'
       }]

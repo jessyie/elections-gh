@@ -49,13 +49,13 @@ engine = create_engine(f'postgresql+psycopg2://{db_user}:{db_password}@{db_host}
 @shared_task(bind=True)
 def update_year_2024_data(self):
     queryUpdateTime = """
-        SELECT * FROM public."time_update"
+        SELECT * FROM public."last_update"
         """
     
     updateTime = pd.read_sql(queryUpdateTime, engine)
 
     if updateTime.empty:
-        return "No records found in time_update table."
+        return "No records found in last_update table."
 
     # Extract the most recent timestamp
     current_time = updateTime['duration'].iloc[0]   # most recent time

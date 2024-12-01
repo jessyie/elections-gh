@@ -242,14 +242,73 @@ flash_PSdf = flash_PSdf2020
 data_loc_str = str(settings.DATA_LOC)
 
 
-GHMap2 = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions16.geojson'))
+# query_ghana_regions = """
+#     SELECT region, wkb_geometry
+#     FROM public.ghana_regions
+
+# """
+
+# GHMap = gpd.read_postgis(query_ghana_regions, engine, geom_col='wkb_geometry')
+# #print("From read_sql", GHMap)
+
+# GHMap_json = GHMap.to_json()
+# #print("From read_sql_json", ghana_regions_json)
+
+# query_ghana_regions16 = """
+#     SELECT region, wkb_geometry
+#     FROM public.ghana_regions16
+
+# """
+
+# GHMap2 = gpd.read_postgis(query_ghana_regions16, engine, geom_col='wkb_geometry')
+# GHMap2_json = GHMap2.to_json()
+
+# query_polling_stations = """
+#     SELECT "PS Code", "PS Name", "Plus code", "GhPostGPS", wkb_geometry
+#     FROM public.polling_stations
+
+# """
+
+# GHMap_PS = gpd.read_postgis(query_polling_stations, engine, geom_col='wkb_geometry')
+# GHMap_PS_json = GHMap_PS.to_json()
+
+
+# query_2004_2008 = """
+#     SELECT "ConstCode", "Constituen", "wkb_geometry"
+#     FROM constituencies2004_2008
+
+# """
+
+# GHMapConst2 = gpd.read_postgis(query_2004_2008, engine, geom_col='wkb_geometry')
+
+
+# query_2012_2020 = """
+#     SELECT "ConstCode", "ConstCode16_12", "Constituen", "wkb_geometry"
+#     FROM constituencies2012_2020_update
+
+# """
+
+# GHMapConst = gpd.read_postgis(query_2012_2020, engine, geom_col='wkb_geometry')
+
+
+# query_2024 = """
+#     SELECT "ConstCode", "Constituen", "wkb_geometry"
+#     FROM constituencies2024
+
+# """
+
+# GHMapConst2024 = gpd.read_postgis(query_2024, engine, geom_col='wkb_geometry')
+
+
+
+GHMap2 = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions16.json'))
 GHMap = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions.geojson'))
 GHMapConst = gpd.read_file(os.path.join(data_loc_str, 'images', 'constituencies2012_2020.geojson'))
 GHMapConst2 = gpd.read_file(os.path.join(data_loc_str, 'images', 'constituencies2004_2008.geojson'))
 GHMapConst2024 = gpd.read_file(os.path.join(data_loc_str, 'images', 'constituencies2024.geojson'))
 GHMap_PS = gpd.read_file(os.path.join(data_loc_str, 'images', 'new_ps', 'new_ps2', 'polling_stations.geojson'))
 GHMap_json = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions.geojson')).to_json()
-GHMap2_json = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions16.geojson')).to_json()
+GHMap2_json = gpd.read_file(os.path.join(data_loc_str, 'images', 'ghana_regions16.json')).to_json()
 GHMap_PS_json = gpd.read_file(os.path.join(data_loc_str, 'images', 'new_ps', 'new_ps2', 'polling_stations.geojson')).to_json()
 # print(f"This is df2:", df2)
 # print(f"This is df2a:", df2a)
@@ -1394,6 +1453,9 @@ def initialise_chart(year = '2024', region='Ashanti', census='Total_Pop', electo
     # Calculate the percentage of the highest value
     df_cleanC2020['Winner_Percentage'] = (df_cleanC2020['Values'] / df_cleanC2020['Total'] * 100).round(2)
 
+    # Replace NaN values with 'No winner'
+    df_cleanC2020['Winner_Percentage'] = df_cleanC2020['Winner_Percentage'].fillna(0)
+
     # Calculate the percentage of the second highest value
     df_cleanC2020['Second_Highest_Percentage'] = (df_cleanC2020['Second_Highest_Value'] / df_cleanC2020['Total'] * 100).round(2)
 
@@ -1484,6 +1546,9 @@ def initialise_chart(year = '2024', region='Ashanti', census='Total_Pop', electo
 
     # Calculate the percentage of the highest value
     df_cleanC2020B['Winner_Percentage'] = (df_cleanC2020B['Values'] / df_cleanC2020B['Total'] * 100).round(2)
+
+    # Replace NaN values with 'No winner'
+    df_cleanC2020B['Winner_Percentage'] = df_cleanC2020B['Winner_Percentage'].fillna(0)
 
     # Calculate the percentage of the second highest value
     df_cleanC2020B['Second_Highest_Percentage'] = (df_cleanC2020B['Second_Highest_Value'] / df_cleanC2020B['Total'] * 100).round(2)
@@ -1661,12 +1726,12 @@ def initialise_chart(year = '2024', region='Ashanti', census='Total_Pop', electo
 
     # print(merged_GHMap2ConstCONST2)
 
-    # JUST 2024 CONSTIYUENCY INFORMATION PARLIAMENT (NOT GRPUPED)
+    # JUST 2024 CONSTITUENCY INFORMATION PARLIAMENT (NOT GRPUPED)
 
     merged_GHMap2Const_jsonCONST2024 = GHMapConst2024.merge(values_dictConstACONST2, left_on="ConstCode", right_index=True)
 
     merged_GHMap2ConstCONST2024 = merged_GHMap2Const_jsonCONST2024.to_json()
-
+    
 
 
     #/////////////////////////////////////////////////////
@@ -1933,64 +1998,69 @@ def initialise_chart(year = '2024', region='Ashanti', census='Total_Pop', electo
     return context  
 
 # Map
-#@login_required(login_url='login')                     
+@login_required(login_url='login')                     
 def map(request):
     data = initialise_chart()
     # data['m'] = m
     return render(request, 'map.html', data)
 
 
-# def SignupPage(request):
-#     if request.method == 'POST':
-#         uname = request.POST.get('username')
-#         email = request.POST.get('email')
-#         pass1 = request.POST.get('password1')
-#         pass2 = request.POST.get('password2')
+def SignupPage(request):
+    if request.method == 'POST':
+        uname = request.POST.get('username')
+        email = request.POST.get('email')
+        pass1 = request.POST.get('password1')
+        pass2 = request.POST.get('password2')
 
-#         if pass1 != pass2:
-#             messages.error(request, "Your password and confirm password are not the same!")
-#             return redirect('signup')  # Redirect back to the signup page
-#         else:
-#             # Check if username already exists
-#             if User.objects.filter(username=uname).exists():
-#                 messages.error(request, "Username already exists!")
-#                 return redirect('signup')
+        if pass1 != pass2:
+            messages.error(request, "Your password and confirm password are not the same!")
+            return redirect('signup')  # Redirect back to the signup page
+        else:
+            # Check if username already exists
+            if User.objects.filter(username=uname).exists():
+                messages.error(request, "Username already exists!")
+                return redirect('signup')
 
-#             # Create and save the user
-#             my_user = User.objects.create_user(uname, email, pass1)
-#             my_user.save()
-#             messages.success(request, "Account created successfully!")
-#             return redirect('login')
+            # Create and save the user
+            my_user = User.objects.create_user(uname, email, pass1)
+            my_user.save()
+            messages.success(request, "Account created successfully!")
+            return redirect('login')
 
-#     return render(request, 'signup.html')
+    return render(request, 'signup.html')
 
-# def LoginPage(request):
-#     if request.method=='POST':
-#         username=request.POST.get('username')
-#         pass1=request.POST.get('pass')
-#         user=authenticate(request,username=username,password=pass1)
-#         if user is not None:
-#             login(request,user)
-#             return redirect('map')
-#         else:
-#             messages.error(request, "Username or Password is incorrect!!!")
-#             return redirect('login')  
+def LoginPage(request):
+    if request.method=='POST':
+        username=request.POST.get('username')
+        pass1=request.POST.get('pass')
+        user=authenticate(request,username=username,password=pass1)
+        if user is not None:
+            login(request,user)
+            return redirect('map')
+        else:
+            messages.error(request, "Username or Password is incorrect!!!")
+            return redirect('login')  
 
-#     return render (request,'login.html')
+    return render (request,'login.html')
 
-# def LogoutPage(request):
-#     logout(request)
-#     return redirect('login')
+def LogoutPage(request):
+    logout(request)
+    return redirect('login')
 
 # Routes
-#@login_required(login_url='login') 
+@login_required(login_url='login') 
 def my_routing(request):
+
+    context = {
+    'GHMap2_json' : GHMap2_json,
+    'GHMap_PS_json' : GHMap_PS_json
+    }
     
-    return render(request, 'index.html')
+    return render(request, 'index.html', context)
 
 
 
-#@login_required(login_url='login') 
+@login_required(login_url='login') 
 def update_charts(request):
     
     #RT
@@ -2005,11 +2075,14 @@ def update_charts(request):
 
     # Generate a unique cache key based on the filter parameters
     cache_key = f"data_{selected_year}_{selected_region}_{selected_census}_{selected_electoral}".replace(" ", "_")
+    cache_hit = False  # Initialize flag to indicate if cache is used
 
     # Check if data is already cached, only for years other than 2024
     data = None
     if selected_year != "2024":
         data = cache.get(cache_key)
+        if data:
+            cache_hit = True  # Data is from cache
 
     if not data:
         # Data not in cache, perform the data processing
@@ -2080,11 +2153,17 @@ def update_charts(request):
         if selected_year != "2024":
             cache.set(cache_key, data, timeout=60 * 15)  # Cache for 15 minutes
 
-    return JsonResponse(data, safe=False)
+    # Include the cache_hit flag in the response
+    response_data = {
+        "data": data,
+        "cache_hit": cache_hit
+    }
+
+    return JsonResponse(response_data, safe=False)
 
 
 
-#@login_required(login_url='login') 
+@login_required(login_url='login') 
 def selectCensus(request):
     census = request.GET.get('census')
     year = request.GET.get('year')
@@ -2092,9 +2171,13 @@ def selectCensus(request):
 
     # Generate a unique cache key based on the filter parameters
     cache_key = f"data_{year}_{region}_{census}".replace(" ", "_")
+    cache_hit = False  # Initialize flag to indicate if cache is used
+
 
     # Check if data is already cached
     data = cache.get(cache_key)
+    if data:
+            cache_hit = True  # Data is from cache
 
     if not data:
         # Data not in cache, perform the data processing
@@ -2153,7 +2236,13 @@ def selectCensus(request):
         # Data is already cached, use the cached data
         context = data
 
-    return JsonResponse(context, safe=False)
+    # Include the cache_hit flag in the response
+    response_data = {
+        "context": context,
+        "cache_hit": cache_hit
+    }
+
+    return JsonResponse(response_data, safe=False)
 
 
 
@@ -2165,7 +2254,7 @@ def selectCensus(request):
 # ////////////////////////////////////////////////////////////////////////
 
 # (1) Chart 1
-#@login_required(login_url='login') 
+@login_required(login_url='login') 
 def selectElectoral1(request):
     electoral = request.GET.get('electoral')
     year = request.GET.get('year')
@@ -2173,11 +2262,16 @@ def selectElectoral1(request):
 
     # Generate a unique cache key based on the filter parameters
     cache_key = f"data_{year}_{region}_{electoral}".replace(" ", "_")
+    cache_hit = False  # Initialize flag to indicate if cache is used
+
+
 
     # Check if data is already cached, only for years other than 2024
     context = None
     if year != "2024":
         context = cache.get(cache_key)
+        if context:
+            cache_hit = True  # Data is from cache
 
     if not context:
         # Data not in cache, perform the data processing
@@ -2295,7 +2389,13 @@ def selectElectoral1(request):
         if year != "2024":
             cache.set(cache_key, context, timeout=60 * 15)  # Cache for 15 minutes
 
-    return JsonResponse(context, safe=False)
+    # Include the cache_hit flag in the response
+    response_data = {
+        "context": context,
+        "cache_hit": cache_hit
+    }
+
+    return JsonResponse(response_data, safe=False)
 
 
 # (3) Chart 2

@@ -308,7 +308,7 @@
 
         <div class="col-md-3" id="chart-container1cc">
             <select class="bt2 btn-dark" id="electoralSelection3">
-                <option selected value="">Presidential Total Vote</option>
+                <option selected value="">Presidential Total Valid Vote</option>
                 <option id='presidentialTotal' disabled>{{tSum2 | safe}} : VALID TOTAL VOTES</option>
                 <!-- {% for gH4 in dfGroupH4 %}
                 <option >{{gH4}}</option>
@@ -385,7 +385,7 @@
 
         <div class="col-md-3" id="chart-container1dd">
             <select class="bt1 btn-dark" id="electoralSelection4">
-                <option selected value="">Parliament Total Vote</option>
+                <option selected value="">Parliament Total Valid Vote</option>
                 <option id='parliamentTotal' disabled>{{tSum | safe}} : VALID TOTAL VOTES</option>
                 <!-- {% for gH5 in dfGroupH5 %}
                 <option >{{gH5}}</option>
@@ -441,9 +441,10 @@
 <div id='GHMap_json' style = 'display:none;'>{{GHMap_json | safe}}</div>
 <div id='GHMap_PS_json' style = 'display:none;'>{{GHMap_PS_json | safe}}</div>
 <div id='parliamentConst16_2024' style = 'display:none;'>{{merged_GHMap2Const2024 | safe}}</div>
-<div id='presidentialConst16_2024' style = 'display:none;'>{{merged_GHMap2ConstCONST2024 | safe}}</div>
-<div id='parliamentConst16CONST2_2024' style = 'display:none;'>{{merged2_GHMap2Const2024 | safe}}</div>
+<div id='parliamentConst16CONST2_2024' style = 'display:none;'>{{merged_GHMap2ConstCONST2024 | safe}}</div>
+<div id='presidentialConst16_2024' style = 'display:none;'>{{merged2_GHMap2Const2024 | safe}}</div>
 <div id='presidentialConst16CONST2_2024' style = 'display:none;'>{{merged2_GHMap2ConstCONST2024 | safe}}</div>
 <div id='flashConstNew_2024' style = 'display:none;'>{{mergedFlashCONST_GHMap2New2024 | safe}}</div>
 {% endblock %}
+
 

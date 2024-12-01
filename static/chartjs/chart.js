@@ -1377,7 +1377,7 @@ function createValidVotes_ConstGeoJSON(parliamentConst16CONST2) {
 
     var flash_CONSTNEW = JSON.parse(document.getElementById('flashConstNew').textContent)
 
-    var flashCONST2NEW = flashCONST2_choropleth(flash_CONSTNEW).addTo(map2)
+    //var flashCONST2NEW = flashCONST2_choropleth(flash_CONSTNEW).addTo(map2)
 
     var flash_CONSTNEW_2024 = JSON.parse(document.getElementById('flashConstNew_2024').textContent)
 
@@ -1417,7 +1417,7 @@ function createValidVotes_ConstGeoJSON(parliamentConst16CONST2) {
         '16 regions' : regions16Data2,
         'PS name' : polling_stationData2,
         'Flash Incident Regions' : flashREG2,
-        'Flash Incident 275 Constinuencies' : flashCONST2NEW,
+        'Flash Incident 275 Constinuencies' : flashCONST2NEW_2024,
         'Flash Incident 276 Constinuencies' : flashCONST2NEW_2024,
         'Flash Incident Polling Stations' : flashPS_Data2
         
@@ -1567,22 +1567,85 @@ function highlightFeature(e, mapId) {
     updateCardContent(tooltipContent);
 }
 
-// Function to update card content dynamically
+// // Function to update card content dynamically
+// function updateCardContent(tooltipContent) {
+//     var cardContent = document.getElementById('card-content');
+    
+//     // Clear the default content
+//     cardContent.innerHTML = '';
+
+//     // Split the tooltipContent by <br> and add each as a list item
+//     var tooltipItems = tooltipContent.split('<br>');
+//     tooltipItems.forEach(function(item) {
+//         var listItem = document.createElement('li');
+//         listItem.className = 'list-group-item';
+//         listItem.innerHTML = item;
+//         cardContent.appendChild(listItem);
+//     });
+// }
+
 function updateCardContent(tooltipContent) {
     var cardContent = document.getElementById('card-content');
-    
+
     // Clear the default content
     cardContent.innerHTML = '';
 
+    // Define the mapping of winners to flag images
+    const winnerFlags = {
+        "No winner": `${staticBaseUrl}logos/No_winner.png`,
+        "NPP": `${staticBaseUrl}logos/NPP.png`, 
+        "NDC": `${staticBaseUrl}logos/NDC.png`, 
+        "CPP": `${staticBaseUrl}logos/CPP.png`, 
+        "GCPP": `${staticBaseUrl}logos/GCPP.png`, 
+        "GFP": `${staticBaseUrl}logos/GFP.png`, 
+        "GUM": `${staticBaseUrl}logos/GUM.png`, 
+        "APC": `${staticBaseUrl}logos/APC.png`, 
+        "LGP": `${staticBaseUrl}logos/LGP.png`, 
+        "NDP": `${staticBaseUrl}logos/NDP.png`, 
+        "IND1": `${staticBaseUrl}logos/IND1.png`, 
+        "IND2": `${staticBaseUrl}logos/IND2.png`, 
+        "IND3": `${staticBaseUrl}logos/IND3.png`, 
+        "IND4": `${staticBaseUrl}logos/IND4.png`, 
+        
+        
+    };
+
+     // Attempt to match either the "Winner: NPP 65%" or "Winner: No winner 0%"
+    var winnerMatch = tooltipContent.match(/Winner:\s([\w\s]+?)\s\d+%/); // Matches "Winner: NPP 65%" or "Winner: No winner 0%"
+    
+    // If the first match fails, try matching "Winner: NPP"
+    if (!winnerMatch) {
+        winnerMatch = tooltipContent.match(/Winner:\s(\w+)/); // Matches "Winner: NPP" or other one-word winners
+    }
+
+    if (winnerMatch) {
+        var winner = winnerMatch[1].trim(); // Extracted winner name
+        if (winnerFlags[winner]) {
+            // Create an image element for the flag
+            var flagImage = document.createElement('img');
+            flagImage.src = winnerFlags[winner];
+            flagImage.alt = `${winner} Flag`;
+            flagImage.className = 'winner-flag'; // Add a class for styling if needed
+            flagImage.style.width = '50px'; // Adjust the size as necessary
+            flagImage.style.marginBottom = '10px';
+            flagImage.style.alignSelf = 'center';
+
+            // Prepend the image to the card content
+            cardContent.appendChild(flagImage);
+        }
+    }
+
     // Split the tooltipContent by <br> and add each as a list item
     var tooltipItems = tooltipContent.split('<br>');
-    tooltipItems.forEach(function(item) {
+    tooltipItems.forEach(function (item) {
         var listItem = document.createElement('li');
         listItem.className = 'list-group-item';
         listItem.innerHTML = item;
         cardContent.appendChild(listItem);
     });
 }
+
+
 
 // Attach event listeners for each feature in the layer
 function onEachFeature(feature, layer, mapId) {
@@ -1904,7 +1967,12 @@ function loadChartData(selectedYear, region, census, electoral) {
     // If the selected year is 2024, open the WebSocket connection for real-time data
     if (selectedYear === "2024") {
         if (socket === null) {
-            socket = new WebSocket("ws://127.0.0.1:8001/ws/data-updates/");
+
+            const socketUrl = window.location.protocol === "https:" ?
+            "wss://sitemap.onrender.com/ws/data-updates/" :
+            "ws://127.0.0.1:8001/ws/data-updates/";
+
+            socket = new WebSocket(socketUrl);
 
             // WebSocket open event
             socket.onopen = function() {
@@ -1941,7 +2009,7 @@ function loadChartData(selectedYear, region, census, electoral) {
 function updateChart(data, selectedYear) {
     // Your chart updating logic here, using the data parameter
     // For example:
-    console.log("Chart data updated:", data);
+    // console.log("Chart data updated:", data);
 
 
     
@@ -2253,22 +2321,85 @@ function updateChart(data, selectedYear) {
         updateCardContent(tooltipContent);
     }
 
-    // Function to update card content dynamically
-    function updateCardContent(tooltipContent) {
-        var cardContent = document.getElementById('card-content');
+    // // Function to update card content dynamically
+    // function updateCardContent(tooltipContent) {
+    //     var cardContent = document.getElementById('card-content');
         
-        // Clear the default content
-        cardContent.innerHTML = '';
+    //     // Clear the default content
+    //     cardContent.innerHTML = '';
 
-        // Split the tooltipContent by <br> and add each as a list item
-        var tooltipItems = tooltipContent.split('<br>');
-        tooltipItems.forEach(function(item) {
-            var listItem = document.createElement('li');
-            listItem.className = 'list-group-item';
-            listItem.innerHTML = item;
-            cardContent.appendChild(listItem);
-        });
+    //     // Split the tooltipContent by <br> and add each as a list item
+    //     var tooltipItems = tooltipContent.split('<br>');
+    //     tooltipItems.forEach(function(item) {
+    //         var listItem = document.createElement('li');
+    //         listItem.className = 'list-group-item';
+    //         listItem.innerHTML = item;
+    //         cardContent.appendChild(listItem);
+    //     });
+    // }
+
+
+    function updateCardContent(tooltipContent) {
+    var cardContent = document.getElementById('card-content');
+
+    // Clear the default content
+    cardContent.innerHTML = '';
+
+    // Define the mapping of winners to flag images
+    const winnerFlags = {
+        "No winner": `${staticBaseUrl}logos/No_winner.png`,
+        "NPP": `${staticBaseUrl}logos/NPP.png`, 
+        "NDC": `${staticBaseUrl}logos/NDC.png`, 
+        "CPP": `${staticBaseUrl}logos/CPP.png`, 
+        "GCPP": `${staticBaseUrl}logos/GCPP.png`, 
+        "GFP": `${staticBaseUrl}logos/GFP.png`, 
+        "GUM": `${staticBaseUrl}logos/GUM.png`, 
+        "APC": `${staticBaseUrl}logos/APC.png`, 
+        "LGP": `${staticBaseUrl}logos/LGP.png`, 
+        "NDP": `${staticBaseUrl}logos/NDP.png`, 
+        "IND1": `${staticBaseUrl}logos/IND1.png`, 
+        "IND2": `${staticBaseUrl}logos/IND2.png`, 
+        "IND3": `${staticBaseUrl}logos/IND3.png`, 
+        "IND4": `${staticBaseUrl}logos/IND4.png`, 
+        
+        
+    };
+
+     // Attempt to match either the "Winner: NPP 65%" or "Winner: No winner 0%"
+    var winnerMatch = tooltipContent.match(/Winner:\s([\w\s]+?)\s\d+%/); // Matches "Winner: NPP 65%" or "Winner: No winner 0%"
+    
+    // If the first match fails, try matching "Winner: NPP"
+    if (!winnerMatch) {
+        winnerMatch = tooltipContent.match(/Winner:\s(\w+)/); // Matches "Winner: NPP" or other one-word winners
     }
+
+    if (winnerMatch) {
+        var winner = winnerMatch[1].trim(); // Extracted winner name
+        if (winnerFlags[winner]) {
+            // Create an image element for the flag
+            var flagImage = document.createElement('img');
+            flagImage.src = winnerFlags[winner];
+            flagImage.alt = `${winner} Flag`;
+            flagImage.className = 'winner-flag'; // Add a class for styling if needed
+            flagImage.style.width = '50px'; // Adjust the size as necessary
+            flagImage.style.marginBottom = '10px';
+            flagImage.style.alignSelf = 'center';
+
+            // Prepend the image to the card content
+            cardContent.appendChild(flagImage);
+        }
+    }
+
+    // Split the tooltipContent by <br> and add each as a list item
+    var tooltipItems = tooltipContent.split('<br>');
+    tooltipItems.forEach(function (item) {
+        var listItem = document.createElement('li');
+        listItem.className = 'list-group-item';
+        listItem.innerHTML = item;
+        cardContent.appendChild(listItem);
+    });
+}
+
 
     // Attach event listeners for each feature in the layer
     function onEachFeature(feature, layer, mapId) {
@@ -2854,9 +2985,14 @@ function updateCharts(selectedYear, region, census, electoral) {
   // Show the modal spinner before the fetch request starts
   $('#staticBackdrop').css('padding-right', '650px').modal('show');
 
+  let cacheHit = false;
+
   fetch(`/update_charts?year=${selectedYear}&region=${''}&census=${''}&electoral=${''}`)
   .then(response => response.json())
-  .then(data => {
+  .then(responseData => {
+
+    const data = responseData.data;
+    const cacheHit = responseData.cache_hit;
     
     // Update chart configuration and data based on the fetched data
 
@@ -3166,22 +3302,85 @@ function updateCharts(selectedYear, region, census, electoral) {
         updateCardContent(tooltipContent);
     }
 
-    // Function to update card content dynamically
-    function updateCardContent(tooltipContent) {
-        var cardContent = document.getElementById('card-content');
+    // // Function to update card content dynamically
+    // function updateCardContent(tooltipContent) {
+    //     var cardContent = document.getElementById('card-content');
         
-        // Clear the default content
-        cardContent.innerHTML = '';
+    //     // Clear the default content
+    //     cardContent.innerHTML = '';
 
-        // Split the tooltipContent by <br> and add each as a list item
-        var tooltipItems = tooltipContent.split('<br>');
-        tooltipItems.forEach(function(item) {
-            var listItem = document.createElement('li');
-            listItem.className = 'list-group-item';
-            listItem.innerHTML = item;
-            cardContent.appendChild(listItem);
-        });
+    //     // Split the tooltipContent by <br> and add each as a list item
+    //     var tooltipItems = tooltipContent.split('<br>');
+    //     tooltipItems.forEach(function(item) {
+    //         var listItem = document.createElement('li');
+    //         listItem.className = 'list-group-item';
+    //         listItem.innerHTML = item;
+    //         cardContent.appendChild(listItem);
+    //     });
+    // }
+
+
+    function updateCardContent(tooltipContent) {
+    var cardContent = document.getElementById('card-content');
+
+    // Clear the default content
+    cardContent.innerHTML = '';
+
+    // Define the mapping of winners to flag images
+    const winnerFlags = {
+        "No winner": `${staticBaseUrl}logos/No_winner.png`,
+        "NPP": `${staticBaseUrl}logos/NPP.png`, 
+        "NDC": `${staticBaseUrl}logos/NDC.png`, 
+        "CPP": `${staticBaseUrl}logos/CPP.png`, 
+        "GCPP": `${staticBaseUrl}logos/GCPP.png`, 
+        "GFP": `${staticBaseUrl}logos/GFP.png`, 
+        "GUM": `${staticBaseUrl}logos/GUM.png`, 
+        "APC": `${staticBaseUrl}logos/APC.png`, 
+        "LGP": `${staticBaseUrl}logos/LGP.png`, 
+        "NDP": `${staticBaseUrl}logos/NDP.png`, 
+        "IND1": `${staticBaseUrl}logos/IND1.png`, 
+        "IND2": `${staticBaseUrl}logos/IND2.png`, 
+        "IND3": `${staticBaseUrl}logos/IND3.png`, 
+        "IND4": `${staticBaseUrl}logos/IND4.png`, 
+        
+        
+    };
+
+    // Attempt to match either the "Winner: NPP 65%" or "Winner: No winner 0%"
+    var winnerMatch = tooltipContent.match(/Winner:\s([\w\s]+?)\s\d+%/); // Matches "Winner: NPP 65%" or "Winner: No winner 0%"
+    
+    // If the first match fails, try matching "Winner: NPP"
+    if (!winnerMatch) {
+        winnerMatch = tooltipContent.match(/Winner:\s(\w+)/); // Matches "Winner: NPP" or other one-word winners
     }
+
+    if (winnerMatch) {
+        var winner = winnerMatch[1].trim(); // Extracted winner name
+        if (winnerFlags[winner]) {
+            // Create an image element for the flag
+            var flagImage = document.createElement('img');
+            flagImage.src = winnerFlags[winner];
+            flagImage.alt = `${winner} Flag`;
+            flagImage.className = 'winner-flag'; // Add a class for styling if needed
+            flagImage.style.width = '50px'; // Adjust the size as necessary
+            flagImage.style.marginBottom = '10px';
+            flagImage.style.alignSelf = 'center';
+
+            // Prepend the image to the card content
+            cardContent.appendChild(flagImage);
+        }
+    }
+
+    // Split the tooltipContent by <br> and add each as a list item
+    var tooltipItems = tooltipContent.split('<br>');
+    tooltipItems.forEach(function (item) {
+        var listItem = document.createElement('li');
+        listItem.className = 'list-group-item';
+        listItem.innerHTML = item;
+        cardContent.appendChild(listItem);
+    });
+}
+
 
     // Attach event listeners for each feature in the layer
     function onEachFeature(feature, layer, mapId) {
@@ -3751,10 +3950,27 @@ function updateCharts(selectedYear, region, census, electoral) {
         data: data.graph1AY2P
       }]
     });
-    // Hide the modal spinner once the chart is updated
-    $('#staticBackdrop').modal('hide');
+    // // Hide the modal spinner once the chart is updated
+    // $('#staticBackdrop').modal('hide');
+
+    // Hide the spinner immediately if data is from cache
+    if (cacheHit) {
+      $('#staticBackdrop').modal('hide');
+    }
 
   })
+
+    .catch((error) => {
+        console.error('Error fetching data:', error);
+      })
+      .finally(() => {
+        // Ensure the spinner hides if not already hidden
+        if (!cacheHit) {
+          setTimeout(() => {
+            $('#staticBackdrop').modal('hide');
+          }, 100);
+        }
+      });
   
   
   resetMap(region, selectedYear);
@@ -3827,9 +4043,15 @@ function updateChartsRegions(selectedYear, region, census, electoral) {
   // Show the modal spinner before the fetch request starts
   $('#staticBackdrop').css('padding-right', '650px').modal('show');
 
+  let cacheHit = false;
+ 
+
   fetch(`/update_charts?year=${selectedYear}&region=${''}&census=${''}&electoral=${''}`)
   .then(response => response.json())
-  .then(data => {
+  .then(responseData => {
+
+    const data = responseData.data;
+    const cacheHit = responseData.cache_hit;
     
     // Update chart configuration and data based on the fetched data
 
@@ -3943,13 +4165,13 @@ function updateChartsRegions(selectedYear, region, census, electoral) {
     ////////////////////////////////////////////// Constituencies
 
 
-    overlayMaps['Parliament 265 constituencies'].clearLayers();
+    overlayMaps['Parliament 275 constituencies'].clearLayers();
 
     var merged_GHMap2ConstCONST2 = data.merged_GHMap2ConstCONST2
 
     var parliamentConst_16 = jsoncreateValidVotes_ConstGeoJSON(merged_GHMap2ConstCONST2).addTo(map);
 
-    overlayMaps['Parliament 265 constituencies'] = parliamentConst_16;
+    overlayMaps['Parliament 275 constituencies'] = parliamentConst_16;
 
 
     overlayMaps['Parliament 230 constituencies'].clearLayers();
@@ -4124,22 +4346,83 @@ function updateChartsRegions(selectedYear, region, census, electoral) {
         updateCardContent(tooltipContent);
     }
 
-    // Function to update card content dynamically
-    function updateCardContent(tooltipContent) {
-        var cardContent = document.getElementById('card-content');
+    // // Function to update card content dynamically
+    // function updateCardContent(tooltipContent) {
+    //     var cardContent = document.getElementById('card-content');
         
-        // Clear the default content
-        cardContent.innerHTML = '';
+    //     // Clear the default content
+    //     cardContent.innerHTML = '';
 
-        // Split the tooltipContent by <br> and add each as a list item
-        var tooltipItems = tooltipContent.split('<br>');
-        tooltipItems.forEach(function(item) {
-            var listItem = document.createElement('li');
-            listItem.className = 'list-group-item';
-            listItem.innerHTML = item;
-            cardContent.appendChild(listItem);
-        });
+    //     // Split the tooltipContent by <br> and add each as a list item
+    //     var tooltipItems = tooltipContent.split('<br>');
+    //     tooltipItems.forEach(function(item) {
+    //         var listItem = document.createElement('li');
+    //         listItem.className = 'list-group-item';
+    //         listItem.innerHTML = item;
+    //         cardContent.appendChild(listItem);
+    //     });
+    // }
+
+    function updateCardContent(tooltipContent) {
+    var cardContent = document.getElementById('card-content');
+
+    // Clear the default content
+    cardContent.innerHTML = '';
+
+    // Define the mapping of winners to flag images
+    const winnerFlags = {
+        "No winner": `${staticBaseUrl}logos/No_winner.png`,
+        "NPP": `${staticBaseUrl}logos/NPP.png`, 
+        "NDC": `${staticBaseUrl}logos/NDC.png`, 
+        "CPP": `${staticBaseUrl}logos/CPP.png`, 
+        "GCPP": `${staticBaseUrl}logos/GCPP.png`, 
+        "GFP": `${staticBaseUrl}logos/GFP.png`, 
+        "GUM": `${staticBaseUrl}logos/GUM.png`, 
+        "APC": `${staticBaseUrl}logos/APC.png`, 
+        "LGP": `${staticBaseUrl}logos/LGP.png`, 
+        "NDP": `${staticBaseUrl}logos/NDP.png`, 
+        "IND1": `${staticBaseUrl}logos/IND1.png`, 
+        "IND2": `${staticBaseUrl}logos/IND2.png`, 
+        "IND3": `${staticBaseUrl}logos/IND3.png`, 
+        "IND4": `${staticBaseUrl}logos/IND4.png`, 
+        
+        
+    };
+
+     // Attempt to match either the "Winner: NPP 65%" or "Winner: No winner 0%"
+    var winnerMatch = tooltipContent.match(/Winner:\s([\w\s]+?)\s\d+%/); // Matches "Winner: NPP 65%" or "Winner: No winner 0%"
+    
+    // If the first match fails, try matching "Winner: NPP"
+    if (!winnerMatch) {
+        winnerMatch = tooltipContent.match(/Winner:\s(\w+)/); // Matches "Winner: NPP" or other one-word winners
     }
+
+    if (winnerMatch) {
+        var winner = winnerMatch[1].trim(); // Extracted winner name
+        if (winnerFlags[winner]) {
+            // Create an image element for the flag
+            var flagImage = document.createElement('img');
+            flagImage.src = winnerFlags[winner];
+            flagImage.alt = `${winner} Flag`;
+            flagImage.className = 'winner-flag'; // Add a class for styling if needed
+            flagImage.style.width = '50px'; // Adjust the size as necessary
+            flagImage.style.marginBottom = '10px';
+            flagImage.style.alignSelf = 'center';
+
+            // Prepend the image to the card content
+            cardContent.appendChild(flagImage);
+        }
+    }
+
+    // Split the tooltipContent by <br> and add each as a list item
+    var tooltipItems = tooltipContent.split('<br>');
+    tooltipItems.forEach(function (item) {
+        var listItem = document.createElement('li');
+        listItem.className = 'list-group-item';
+        listItem.innerHTML = item;
+        cardContent.appendChild(listItem);
+    });
+}
 
     // Attach event listeners for each feature in the layer
     function onEachFeature(feature, layer, mapId) {
@@ -4191,9 +4474,9 @@ function updateChartsRegions(selectedYear, region, census, electoral) {
     
     map.removeLayer(overlayMaps['Presidential 230 constituencies']);
 
-    map.removeLayer(overlayMaps['Parliament 275 constituencies']);
+    map.removeLayer(overlayMaps['Parliament 276 constituencies']);
     
-    map.removeLayer(overlayMaps['Presidential 275 constituencies']);
+    map.removeLayer(overlayMaps['Presidential 276 constituencies']);
 
     if (selectedYear === "2004" || selectedYear === "2008" || selectedYear === "2009" || selectedYear === "2012" || selectedYear === "2016") {
       map.removeLayer(overlayMaps['Presidential 16 Regions']);  
@@ -4341,7 +4624,7 @@ function updateChartsRegions(selectedYear, region, census, electoral) {
         },
       },
       title: {
-        text: 'Total Valid Votes Per Political Party (Parliament)',
+        text: 'Total Valid Votes Per Region (Parliament)',
         align: 'left'
       },
 
@@ -4353,7 +4636,7 @@ function updateChartsRegions(selectedYear, region, census, electoral) {
           enabled: categories1.length > visibleRange // Enable scrollbar only if needed
         }, 
         title: {
-          text: 'Parties'
+          text: 'Regions'
         },
         gridLineWidth: 1,
         lineWidth: 0
@@ -4361,7 +4644,7 @@ function updateChartsRegions(selectedYear, region, census, electoral) {
       yAxis: {
         min: 0,
         title: {
-          text: 'Total Consituency wins',
+          text: 'Total Valid Votes',
           align: 'high'
         },
         labels: {
@@ -4397,7 +4680,7 @@ function updateChartsRegions(selectedYear, region, census, electoral) {
         enabled: false
       },
       series: [{
-        name: 'Consituency wins',
+        name: 'Valid Votes',
         data: data.graph1AY
       }]
     }); 
@@ -4410,7 +4693,7 @@ function updateChartsRegions(selectedYear, region, census, electoral) {
         },
       },
       title: {
-        text: 'Total Valid Votes Per Political Party (Presidential)',
+        text: 'Total Valid Votes Per Region (Presidential)',
         align: 'left'
       },
 
@@ -4422,7 +4705,7 @@ function updateChartsRegions(selectedYear, region, census, electoral) {
           enabled: true
         },
         title: {
-          text: 'Parties'
+          text: 'Regions'
         },
         gridLineWidth: 1,
         lineWidth: 0
@@ -4700,10 +4983,25 @@ function updateChartsRegions(selectedYear, region, census, electoral) {
         data: data.graph1AY2P
       }]
     });
-     // Hide the modal spinner once the chart is updated
-    $('#staticBackdrop').modal('hide');
+     // Hide the spinner immediately if data is from cache
+    if (cacheHit) {
+      $('#staticBackdrop').modal('hide');
+    }
+
 
   })
+
+    .catch((error) => {
+        console.error('Error fetching data:', error);
+      })
+      .finally(() => {
+        // Ensure the spinner hides if not already hidden
+        if (!cacheHit) {
+          setTimeout(() => {
+            $('#staticBackdrop').modal('hide');
+          }, 100);
+        }
+      });
   
   
   resetMap(region, selectedYear);
@@ -4777,9 +5075,15 @@ function updateCharts2(year, selectedRegion, census, electoral) {
   // Show the modal spinner before the fetch request starts
   $('#staticBackdrop').css('padding-right', '650px').modal('show');
 
+  let cacheHit = false;
+
   fetch(`/update_charts?year=${year}&region=${selectedRegion}&census=${''}&electoral=${''}`)
   .then(response => response.json())
-  .then(data => {
+  .then(responseData => {
+
+
+    const data = responseData.data;
+    const cacheHit = responseData.cache_hit;
 
 
 
@@ -4845,19 +5149,6 @@ function updateCharts2(year, selectedRegion, census, electoral) {
     overlayMaps2['Flash Incident 276 Constinuencies'] = flashCONST2024;
 
 
-    var mergedFlashCONST_GHMap2 = data.mergedFlashCONST_GHMap2
-
-    var mergedFlashCONST_GHMap2024 = data.mergedFlashCONST_GHMap2024
-
-    if (year === "2004" || year === "2008" || year === "2009" || year === "2012" || year === "2016" || year === "2020") {
-        flashCONST2REG = jsonflashCONST2_choropleth(mergedFlashCONST_GHMap2).addTo(map2);
-        bindClickToDynamicLayers(flashCONST2REG, 'map2');
-    } else {
-        flashCONST2REG_2024 = jsonflashCONST2_choropleth(mergedFlashCONST_GHMap2024).addTo(map2);
-        bindClickToDynamicLayers(flashCONST2REG_2024, 'map2');
-    }
-
-  
 
     // not part of current commenting test
     //------------------------------------
@@ -5016,22 +5307,82 @@ function updateCharts2(year, selectedRegion, census, electoral) {
         updateCardContent(tooltipContent);
     }
 
-    // Function to update card content dynamically
-    function updateCardContent(tooltipContent) {
-        var cardContent = document.getElementById('card-content');
+    // // Function to update card content dynamically
+    // function updateCardContent(tooltipContent) {
+    //     var cardContent = document.getElementById('card-content');
         
-        // Clear the default content
-        cardContent.innerHTML = '';
+    //     // Clear the default content
+    //     cardContent.innerHTML = '';
 
-        // Split the tooltipContent by <br> and add each as a list item
-        var tooltipItems = tooltipContent.split('<br>');
-        tooltipItems.forEach(function(item) {
-            var listItem = document.createElement('li');
-            listItem.className = 'list-group-item';
-            listItem.innerHTML = item;
-            cardContent.appendChild(listItem);
-        });
+    //     // Split the tooltipContent by <br> and add each as a list item
+    //     var tooltipItems = tooltipContent.split('<br>');
+    //     tooltipItems.forEach(function(item) {
+    //         var listItem = document.createElement('li');
+    //         listItem.className = 'list-group-item';
+    //         listItem.innerHTML = item;
+    //         cardContent.appendChild(listItem);
+    //     });
+    // }
+
+    function updateCardContent(tooltipContent) {
+    var cardContent = document.getElementById('card-content');
+
+    // Clear the default content
+    cardContent.innerHTML = '';
+
+    // Define the mapping of winners to flag images
+    const winnerFlags = {
+        "No winner": `${staticBaseUrl}logos/No_winner.png`,
+        "NPP": `${staticBaseUrl}logos/NPP.png`, 
+        "NDC": `${staticBaseUrl}logos/NDC.png`, 
+        "CPP": `${staticBaseUrl}logos/CPP.png`, 
+        "GCPP": `${staticBaseUrl}logos/GCPP.png`, 
+        "GFP": `${staticBaseUrl}logos/GFP.png`, 
+        "GUM": `${staticBaseUrl}logos/GUM.png`, 
+        "APC": `${staticBaseUrl}logos/APC.png`, 
+        "LGP": `${staticBaseUrl}logos/LGP.png`, 
+        "NDP": `${staticBaseUrl}logos/NDP.png`, 
+        "IND1": `${staticBaseUrl}logos/IND1.png`, 
+        "IND2": `${staticBaseUrl}logos/IND2.png`, 
+        "IND3": `${staticBaseUrl}logos/IND3.png`, 
+        "IND4": `${staticBaseUrl}logos/IND4.png`, 
+        
+        
+    };
+ // Attempt to match either the "Winner: NPP 65%" or "Winner: No winner 0%"
+    var winnerMatch = tooltipContent.match(/Winner:\s([\w\s]+?)\s\d+%/); // Matches "Winner: NPP 65%" or "Winner: No winner 0%"
+    
+    // If the first match fails, try matching "Winner: NPP"
+    if (!winnerMatch) {
+        winnerMatch = tooltipContent.match(/Winner:\s(\w+)/); // Matches "Winner: NPP" or other one-word winners
     }
+
+    if (winnerMatch) {
+        var winner = winnerMatch[1].trim(); // Extracted winner name
+        if (winnerFlags[winner]) {
+            // Create an image element for the flag
+            var flagImage = document.createElement('img');
+            flagImage.src = winnerFlags[winner];
+            flagImage.alt = `${winner} Flag`;
+            flagImage.className = 'winner-flag'; // Add a class for styling if needed
+            flagImage.style.width = '50px'; // Adjust the size as necessary
+            flagImage.style.marginBottom = '10px';
+            flagImage.style.alignSelf = 'center';
+
+            // Prepend the image to the card content
+            cardContent.appendChild(flagImage);
+        }
+    }
+
+    // Split the tooltipContent by <br> and add each as a list item
+    var tooltipItems = tooltipContent.split('<br>');
+    tooltipItems.forEach(function (item) {
+        var listItem = document.createElement('li');
+        listItem.className = 'list-group-item';
+        listItem.innerHTML = item;
+        cardContent.appendChild(listItem);
+    });
+}
 
     // Attach event listeners for each feature in the layer
     function onEachFeature(feature, layer, mapId) {
@@ -5097,6 +5448,25 @@ function updateCharts2(year, selectedRegion, census, electoral) {
     } else {
         presidentialConst_16_REG_2024 = jsoncreateValidVotes_ConstGeoJSON(merged2_GHMap2Const2024).addTo(map);
         bindClickToDynamicLayers(presidentialConst_16_REG_2024, 'map');
+    }
+
+
+
+    // FLASH
+
+    //___________
+
+
+    //var mergedFlashCONST_GHMap2 = data.mergedFlashCONST_GHMap2
+
+    var mergedFlashCONST_GHMap2024 = data.mergedFlashCONST_GHMap2024
+
+    if (year === "2004" || year === "2008" || year === "2009" || year === "2012" || year === "2016" || year === "2020") {
+        flashCONST2REG = jsonflashCONST2_choropleth(mergedFlashCONST_GHMap2024).addTo(map2);
+        bindClickToDynamicLayers(flashCONST2REG, 'map2');
+    }else {
+        flashCONST2REG_2024 = jsonflashCONST2_choropleth(mergedFlashCONST_GHMap2024).addTo(map2);
+        bindClickToDynamicLayers(flashCONST2REG_2024, 'map2');
     }
 
 
@@ -5340,7 +5710,7 @@ function updateCharts2(year, selectedRegion, census, electoral) {
         plotShadow: false
       },
       title: {
-        text: 'Total Valid Votes Per Political Party Constituency(Parliament)',
+        text: 'Total Valid Votes Per Political Party(Parliament)',
         // style: {
         //   fontSize: '17px',
         //   fontWeight: 'bold'
@@ -5375,7 +5745,7 @@ function updateCharts2(year, selectedRegion, census, electoral) {
         plotShadow: false
       },
       title: {
-        text: 'Total Valid Votes Per Political Party Constituency(Presidential)',
+        text: 'Total Valid Votes Per Political Party(Presidential)',
         // style: {
         //   fontSize: '17px',
         //   fontWeight: 'bold'
@@ -5578,10 +5948,25 @@ function updateCharts2(year, selectedRegion, census, electoral) {
         data: data.graph1BY2P
       }]
     });
-    // Hide the modal spinner once the chart is updated
-    $('#staticBackdrop').modal('hide');
+     // Hide the spinner immediately if data is from cache
+    if (cacheHit) {
+      $('#staticBackdrop').modal('hide');
+    }
+
     
   })
+
+    .catch((error) => {
+        console.error('Error fetching data:', error);
+      })
+      .finally(() => {
+        // Ensure the spinner hides if not already hidden
+        if (!cacheHit) {
+          setTimeout(() => {
+            $('#staticBackdrop').modal('hide');
+          }, 100);
+        }
+      });
 
   updateLayerVisibility(selectedRegion, year);
   map.on("zoomend", updateLayerVisibility());
@@ -5653,9 +6038,15 @@ function updateCharts3(censusSelected, year, region, electoral) {
    // Show the modal spinner before the fetch request starts
   $('#staticBackdrop').css('padding-right', '650px').modal('show');
 
+  let cacheHit = false;
+ 
+
   fetch(`/update_charts?census=${censusSelected}&year=${year}&region=${''}&electoral=${''}`)
   .then(response => response.json())
-  .then(data => {
+  .then(responseData => {
+
+    const data = responseData.data;
+    const cacheHit = responseData.cache_hit;
 
     var selectCensus = document.getElementById("censusSelection");
     var subtitleText = selectCensus.value !== 'Total_Pop' ? selectCensus.value + ' %' : '';
@@ -5730,10 +6121,26 @@ function updateCharts3(censusSelected, year, region, electoral) {
       }]
     });
 
-     // Hide the modal spinner once the chart is updated
-    $('#staticBackdrop').modal('hide');
+      // Hide the spinner immediately if data is from cache
+    if (cacheHit) {
+      $('#staticBackdrop').modal('hide');
+    }
+
 
   })
+
+    .catch((error) => {
+        console.error('Error fetching data:', error);
+      })
+      .finally(() => {
+        // Ensure the spinner hides if not already hidden
+        if (!cacheHit) {
+          setTimeout(() => {
+            $('#staticBackdrop').modal('hide');
+          }, 100);
+        }
+      });
+
   // .catch(error => {
   //   console.error('Error fetching data:', error);
   //   // Optionally hide the spinner modal even if there's an error
@@ -5763,9 +6170,14 @@ function updateCharts4(censusSelected, year, region) {
   // Show the modal spinner before the fetch request starts
   // $('#staticBackdrop').css('padding-right', '650px').modal('show');
 
+    let cacheHit = false;
+
   fetch(`/selectCensus?census=${censusSelected}&year=${''}&region=${region}`)
   .then(response => response.json())
-  .then(data => {
+  .then(responseData => {
+
+    const data = responseData.context;
+    const cacheHit = responseData.cache_hit;
 
     var selectCensus = document.getElementById("censusSelection");
     var subtitleText = selectCensus.value !== 'Total_Pop' ? selectCensus.value + ' %' : '';
@@ -5839,10 +6251,26 @@ function updateCharts4(censusSelected, year, region) {
         data: data.graph1BY2P
       }]
     });
-     // Hide the modal spinner once the chart is updated
-    // $('#staticBackdrop').modal('hide');
+      // Hide the spinner immediately if data is from cache
+    if (cacheHit) {
+      $('#staticBackdrop').modal('hide');
+    }
+
 
   })
+
+    .catch((error) => {
+        console.error('Error fetching data:', error);
+      })
+      .finally(() => {
+        // Ensure the spinner hides if not already hidden
+        if (!cacheHit) {
+          setTimeout(() => {
+            $('#staticBackdrop').modal('hide');
+          }, 100);
+        }
+      });
+
   // .catch(error => {
   //   console.error('Error fetching data:', error);
   //   // Optionally hide the spinner modal even if there's an error
@@ -5952,9 +6380,15 @@ function updateCharts5(electoralSelected, year, region, census) {
   // Show the modal spinner before the fetch request starts
   $('#staticBackdrop').css('padding-right', '650px').modal('show');
 
+  let cacheHit = false;
+
+
   fetch(`/update_charts?electoral=${electoralSelected}&year=${year}&region=${''}&census=${''}`)
   .then(response => response.json())
-  .then(data => {
+  .then(responseData => {
+
+    const data = responseData.data;
+    const cacheHit = responseData.cache_hit;
 
     var selectElectoral10 = document.getElementById("electoralSelection1");
     var subtitleText10 = selectElectoral10.value;
@@ -6019,10 +6453,25 @@ function updateCharts5(electoralSelected, year, region, census) {
         data: data.graph1BY
       }]
     });
-     // Hide the modal spinner once the chart is updated
-    $('#staticBackdrop').modal('hide');
+     // Hide the spinner immediately if data is from cache
+    if (cacheHit) {
+      $('#staticBackdrop').modal('hide');
+    }
+
 
   })
+
+    .catch((error) => {
+        console.error('Error fetching data:', error);
+      })
+      .finally(() => {
+        // Ensure the spinner hides if not already hidden
+        if (!cacheHit) {
+          setTimeout(() => {
+            $('#staticBackdrop').modal('hide');
+          }, 100);
+        }
+      });
 
   // .catch(error => {
   //   console.error('Error fetching data:', error);
@@ -6054,9 +6503,14 @@ function updateCharts6(electoralSelected, year, region) {
   // // Show the modal spinner before the fetch request starts
   // $('#staticBackdrop').css('padding-right', '650px').modal('show');
 
+    let cacheHit = false;
+
   fetch(`/selectElectoral1?electoral=${electoralSelected}&year=${year}&region=${region}`)
   .then(response => response.json())
-  .then(data => {
+  .then(responseData  => {
+
+    const data = responseData.context;
+    const cacheHit = responseData.cache_hit;
 
     // var selectElectoral11 = document.getElementById("electoralSelection1");
     // var subtitleText11 = selectElectoral11.value;
@@ -6126,10 +6580,25 @@ function updateCharts6(electoralSelected, year, region) {
         data: data.graphSub1BY
       }]
     });
-    //  // Hide the modal spinner once the chart is updated
-    // $('#staticBackdrop').modal('hide');
+     // Hide the spinner immediately if data is from cache
+    if (cacheHit) {
+      $('#staticBackdrop').modal('hide');
+    }
+
 
   })
+
+    .catch((error) => {
+        console.error('Error fetching data:', error);
+      })
+      .finally(() => {
+        // Ensure the spinner hides if not already hidden
+        if (!cacheHit) {
+          setTimeout(() => {
+            $('#staticBackdrop').modal('hide');
+          }, 100);
+        }
+      });
   
   // .catch(error => {
   //   console.error('Error fetching data:', error);
@@ -6235,9 +6704,14 @@ function updateCharts7(electoralSelected, year, region, census) {
    // Show the modal spinner before the fetch request starts
   $('#staticBackdrop').css('padding-right', '650px').modal('show');
 
+  let cacheHit = false;
+
   fetch(`/update_charts?electoral=${electoralSelected}&year=${year}&region=${''}&census=${''}`)
   .then(response => response.json())
-  .then(data => {
+  .then(responseData => {
+
+    const data = responseData.data;
+    const cacheHit = responseData.cache_hit;
 
     var selectElectoral12 = document.getElementById("electoralSelection2");
     var subtitleText12 = selectElectoral12.value;
@@ -6308,10 +6782,25 @@ function updateCharts7(electoralSelected, year, region, census) {
         data: data.graph1AY
       }]
     });
-     // Hide the modal spinner once the chart is updated
-    $('#staticBackdrop').modal('hide');
+     // Hide the spinner immediately if data is from cache
+    if (cacheHit) {
+      $('#staticBackdrop').modal('hide');
+    }
+
 
   })
+
+    .catch((error) => {
+        console.error('Error fetching data:', error);
+      })
+      .finally(() => {
+        // Ensure the spinner hides if not already hidden
+        if (!cacheHit) {
+          setTimeout(() => {
+            $('#staticBackdrop').modal('hide');
+          }, 100);
+        }
+      });
   
   // .catch(error => {
   //   console.error('Error fetching data:', error);
@@ -6341,12 +6830,17 @@ function getCookie(name) {
   // Function to fetch and update chart data
 function updateCharts8(electoralSelected, year, region) {
 
-  // // Show the modal spinner before the fetch request starts
-  // $('#staticBackdrop').css('padding-right', '650px').modal('show');
+  // Show the modal spinner before the fetch request starts
+  $('#staticBackdrop').css('padding-right', '650px').modal('show');
+
+    let cacheHit = false;
 
   fetch(`/selectElectoral1?electoral=${electoralSelected}&year=${year}&region=${region}`)
   .then(response => response.json())
-  .then(data => {
+  .then(responseData => {
+
+    const data = responseData.context;
+    const cacheHit = responseData.cache_hit;
 
     // var selectElectoral13 = document.getElementById("electoralSelection2");
     // var subtitleText13 = selectElectoral13.value
@@ -6417,10 +6911,25 @@ function updateCharts8(electoralSelected, year, region) {
         data: data.graphSub1AY
       }]
     });
-    //  // Hide the modal spinner once the chart is updated
-    // $('#staticBackdrop').modal('hide');
+     // Hide the spinner immediately if data is from cache
+    if (cacheHit) {
+      $('#staticBackdrop').modal('hide');
+    }
+
 
   })
+
+    .catch((error) => {
+        console.error('Error fetching data:', error);
+      })
+      .finally(() => {
+        // Ensure the spinner hides if not already hidden
+        if (!cacheHit) {
+          setTimeout(() => {
+            $('#staticBackdrop').modal('hide');
+          }, 100);
+        }
+      });
   
   // .catch(error => {
   //   console.error('Error fetching data:', error);
@@ -6986,6 +7495,13 @@ document.getElementById('yearSelection').addEventListener('change', function() {
             <img src="${defaultImagePath}" id="default-image" alt="No Selection">
         </li>
     `;
+     // Reset 'electoralSelection1' to its default state
+    const electoralSelection1 = document.getElementById('electoralSelection1');
+    electoralSelection1.selectedIndex = 0; // Set the dropdown to the first option (default)
+
+     // Reset 'electoralSelection1' to its default state
+    const electoralSelection2 = document.getElementById('electoralSelection2');
+    electoralSelection2.selectedIndex = 0; // Set the dropdown to the first option (default)
 });
 
 // Refetch button to fetch data again based on the selected year
@@ -6993,6 +7509,20 @@ document.getElementById('refetchButton').addEventListener('click', function() {
     if (isYearSelected && selectedYear) {
         // Call function to update charts based on the stored year
         changeChartYear();
+        var cardContent = document.getElementById('card-content');
+        cardContent.innerHTML = '';
+        cardContent.innerHTML = `
+            <li class="list-group-item" id="default-item">
+                <img src="${defaultImagePath}" id="default-image" alt="No Selection">
+            </li>
+        `;
+        // Reset 'electoralSelection1' to its default state
+        const electoralSelection1 = document.getElementById('electoralSelection1');
+        electoralSelection1.selectedIndex = 0; // Set the dropdown to the first option (default)
+
+         // Reset 'electoralSelection1' to its default state
+        const electoralSelection2 = document.getElementById('electoralSelection2');
+        electoralSelection2.selectedIndex = 0; // Set the dropdown to the first option (default)
     } else {
         alert("Please select a year first!");
     }
@@ -7007,6 +7537,20 @@ document.getElementById('regionSelection').addEventListener('change', function()
         isYearSelected = false; // Reset year selection if needed
         // Call function to update charts based on region
         changeChartRegion()
+        var cardContent = document.getElementById('card-content');
+        cardContent.innerHTML = '';
+        cardContent.innerHTML = `
+            <li class="list-group-item" id="default-item">
+                <img src="${defaultImagePath}" id="default-image" alt="No Selection">
+            </li>
+        `;
+        // Reset 'electoralSelection1' to its default state
+        const electoralSelection1 = document.getElementById('electoralSelection1');
+        electoralSelection1.selectedIndex = 0; // Set the dropdown to the first option (default)
+
+         // Reset 'electoralSelection1' to its default state
+        const electoralSelection2 = document.getElementById('electoralSelection2');
+        electoralSelection2.selectedIndex = 0; // Set the dropdown to the first option (default)
     }
 });
 
@@ -7022,6 +7566,20 @@ document.getElementById('regionSelection').addEventListener('change', function()
         isRegionSelected = false; // Reset region selection if needed
         // Call function to update charts based on year
         changeChartYear()
+        var cardContent = document.getElementById('card-content');
+        cardContent.innerHTML = '';
+        cardContent.innerHTML = `
+            <li class="list-group-item" id="default-item">
+                <img src="${defaultImagePath}" id="default-image" alt="No Selection">
+            </li>
+        `;
+        // Reset 'electoralSelection1' to its default state
+        const electoralSelection1 = document.getElementById('electoralSelection1');
+        electoralSelection1.selectedIndex = 0; // Set the dropdown to the first option (default)
+
+         // Reset 'electoralSelection1' to its default state
+        const electoralSelection2 = document.getElementById('electoralSelection2');
+        electoralSelection2.selectedIndex = 0; // Set the dropdown to the first option (default)
     }
 });
 
@@ -7037,6 +7595,20 @@ document.getElementById('regionSelection').addEventListener('change', function()
         isRegionSelected = false; // Reset region selection if needed
         // Call function to update charts based on year
         changeChartYearRegions()
+        var cardContent = document.getElementById('card-content');
+        cardContent.innerHTML = '';
+        cardContent.innerHTML = `
+            <li class="list-group-item" id="default-item">
+                <img src="${defaultImagePath}" id="default-image" alt="No Selection">
+            </li>
+        `;
+        // Reset 'electoralSelection1' to its default state
+        const electoralSelection1 = document.getElementById('electoralSelection1');
+        electoralSelection1.selectedIndex = 0; // Set the dropdown to the first option (default)
+
+         // Reset 'electoralSelection1' to its default state
+        const electoralSelection2 = document.getElementById('electoralSelection2');
+        electoralSelection2.selectedIndex = 0; // Set the dropdown to the first option (default)
     }
 });
 
