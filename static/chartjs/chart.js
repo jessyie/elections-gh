@@ -1966,9 +1966,16 @@ let socket = null;
 function loadChartData(selectedYear, region, census, electoral) {
     // If the selected year is 2024, open the WebSocket connection for real-time data
     if (selectedYear === "2024") {
+
+        const isProduction = window.location.hostname !== "localhost";
+        const protocol = isProduction ? "wss:" : "ws:";
+        const host = window.location.hostname;
+        const port = isProduction ? "" : ":8001";  // No port for production, specify for dev
+        const path = "/ws/data-updates/";
+
         if (socket === null) {
 
-            socket = new WebSocket("wss://sitemap.onrender.com/ws/data-updates/");
+            socket = new WebSocket(`${protocol}//${host}${port}${path}`);
 
             // WebSocket open event
             socket.onopen = function() {
@@ -7498,6 +7505,7 @@ document.getElementById('yearSelection').addEventListener('change', function() {
      // Reset 'electoralSelection1' to its default state
     const electoralSelection2 = document.getElementById('electoralSelection2');
     electoralSelection2.selectedIndex = 0; // Set the dropdown to the first option (default)
+
 });
 
 // Refetch button to fetch data again based on the selected year
@@ -8395,6 +8403,154 @@ var scaleFactor = 0.5; // scale factor for radius size
         }
     });
 }
+
+
+
+// Candidates image display
+
+// _______________________________
+
+
+ // Function to toggle the Candidates button based on the selected year
+  function toggleCandidatesButton(year) {
+    var candidatesButton = document.getElementById('candidates-button');
+
+    if (year >= 2024) {
+      candidatesButton.style.display = 'inline-block'; // Show button
+      candidatesButton.style.fontSize = '11px';
+      candidatesButton.style.marginLeft  = '24px';
+    } else {
+      candidatesButton.style.display = 'none'; // Hide button
+    }
+  }
+
+  // Attach event listener to the year selection dropdown
+  document.getElementById('yearSelection').addEventListener('change', function () {
+    var selectedYear = this.value; // Get the selected year value
+    toggleCandidatesButton(parseInt(selectedYear) || 0); // Call the function with the selected year
+  });
+
+  // Ensure the button appears on initial page load if year is 2024
+  window.onload = function () {
+    toggleCandidatesButton(2024); // Initialize with 2024 as the default year
+  };
+
+ // Generate candidate list by ConstCode or Region
+function generateCandidateList(identifier, isConstCode) {
+  const parties = ['NPP', 'NDC', 'CPP', 'GCPP', 'GFP', 'GUM', 'APC', 'LPG', 'NDP', 'PAG', 'PNC', 'PPP', 'IND1', 'IND2', 'IND3', 'IND4'];
+  const imagesList = [];
+  let imageCheckCount = 0;
+
+  // Loop through all the parties
+  parties.forEach(party => {
+    let imagePath;
+
+    if (isConstCode) {
+      // Generate the image path for ConstCode images
+      imagePath = `${staticBaseUrl}logo/${identifier}_${party}.png`; // Example: A2034_NPP.png
+    } else {
+      // Generate the image path for Region-based images
+      imagePath = `${staticBaseUrl}logo/${party}.png`; // Example: NPP.png
+    }
+
+    const img = new Image();
+    img.src = imagePath;
+
+    img.onload = function () {
+      imageCheckCount++;
+
+      imagesList.push(`
+        <li style="list-style: none; margin-bottom: 10px; display: flex; align-items: center;">
+          <img src="${imagePath}" alt="${party}" style="width: 195px; height: auto; margin-right: 15px;">
+          <span style="font-weight: bold;">${party}</span>
+        </li>
+      `);
+
+      if (imageCheckCount === parties.length) {
+        updatePopupContent(imagesList);
+      }
+    };
+
+    img.onerror = function () {
+      imageCheckCount++;
+      if (imageCheckCount === parties.length) {
+        updatePopupContent(imagesList);
+      }
+    };
+  });
+}
+
+// Function to update the popup content
+function updatePopupContent(imagesList) {
+  const content = imagesList.length
+    ? `<ul style="max-height: 300px; overflow-y: auto; padding: 0;">${imagesList.join('')}</ul>`
+    : 'No candidates found for the given criteria';
+
+  showPopup(content);
+}
+
+// Function to display the popup (only one at a time)
+function showPopup(content) {
+  // Close any existing popup first
+  closePopup();
+
+  const popup = document.createElement('div');
+  popup.id = 'popup';
+  popup.innerHTML = `
+    <div class="popup-content" style="max-height: 400px; overflow-y: auto;">
+      <button onclick="closePopup()" style="margin-bottom: 10px;">Close</button>
+      ${content}
+    </div>
+  `;
+  popup.style.position = 'fixed';
+  popup.style.left = '50%';
+  popup.style.top = '50%';
+  popup.style.transform = 'translate(-50%, -50%)';
+  popup.style.backgroundColor = '#fff';
+  popup.style.padding = '20px';
+  popup.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.5)';
+  popup.style.width = '300px';
+  popup.style.zIndex = '1000';
+  document.body.appendChild(popup);
+}
+
+// Function to close the popup
+function closePopup() {
+  const existingPopup = document.getElementById('popup');
+  if (existingPopup) {
+    document.body.removeChild(existingPopup);
+  }
+}
+
+// Function to show candidates popup
+function showCandidatesPopup() {
+  const cardContent = document.getElementById('card-content');
+  const listItems = cardContent.getElementsByTagName('li');
+  let constCode = null;
+  let hasWinner = false;
+
+  for (let item of listItems) {
+    if (item.innerHTML.includes('Constituency Code')) {
+      constCode = item.innerHTML.split(':')[1].trim();
+    }
+    if (item.innerHTML.includes('Winner')) {
+      hasWinner = true;
+    }
+  }
+
+  if (!listItems.length) {
+    showPopup('No data in the Information board = No candidate data to display');
+  } else if (!hasWinner) {
+    showPopup('No candidate data');
+  } else if (constCode) {
+    generateCandidateList(constCode, true);
+  } else {
+    generateCandidateList('', false); // Generate list for Region-based candidates
+  }
+}
+
+
+
 
 
 

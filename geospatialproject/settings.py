@@ -196,9 +196,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # RT
 # when deploying or in production, use this cerlery_broker_url
-CELERY_BROKER_URL = os.getenv('REDIS_URL')
+#CELERY_BROKER_URL = os.getenv('REDIS_URL')
 #e else use this in development
 #CELERY_BROKER_URL = 'redis://127.0.0.1:6379'  # Redis as the broker
+CELERY_BROKER_URL = config('REDIS_URL', default='redis://127.0.0.1:6379')
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
@@ -215,11 +216,20 @@ CELERY_TASK_RESULT_EXPIRES = 25  # 25 seconds
 # Django Channels settings
 # RT
 ASGI_APPLICATION = 'geospatialproject.asgi.application'
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels_redis.core.RedisChannelLayer",
+#         "CONFIG": {
+#             "hosts": [os.getenv('REDIS_URL', 'redis://localhost:6379')],
+#         },
+#     },
+# }
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [os.getenv('REDIS_URL', 'redis://localhost:6379')],
+            "hosts": [config('REDIS_URL', default='redis://127.0.0.1:6379')],
         },
     },
 }
