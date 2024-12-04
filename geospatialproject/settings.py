@@ -35,7 +35,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 #DEBUG = os.environ.get("DEBUG", config('DEBUG'))
 DEBUG = os.getenv('DEBUG')  == 'True'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'http://0.0.0.0:10000', 'localhost', '.onrender.com','www.election-gh.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'http://0.0.0.0:10000', 'wss://0.0.0.0:8001', '0.0.0.0:8001', 'localhost', '.onrender.com','www.election-gh.com']
 #ALLOWED_HOSTS = ['0.0.0.0:10000', '.onrender.com','www.election-gh.com']
 #ALLOWED_HOSTS = ['0.0.0.0:10000', 'localhost', 'electoral-dashboard-ghana.onrender.com']
 
@@ -172,7 +172,7 @@ STATICFILES_FINDERS = [
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Extra places for collectstatic to find static files in development mode.
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
