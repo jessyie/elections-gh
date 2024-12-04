@@ -1970,7 +1970,7 @@ function loadChartData(selectedYear, region, census, electoral) {
         const isProduction = window.location.hostname !== "localhost";
         const protocol = isProduction ? "wss:" : "ws:";
         const host = window.location.hostname;
-        const port = isProduction ? "" : ":8001";  // No port for production, specify for dev
+        const port = isProduction ? ":8001" : ":8001";  // No port for production, specify for dev
         const path = "/ws/data-updates/";
 
         if (socket === null) {
@@ -7527,9 +7527,15 @@ document.getElementById('refetchButton').addEventListener('click', function() {
          // Reset 'electoralSelection1' to its default state
         const electoralSelection2 = document.getElementById('electoralSelection2');
         electoralSelection2.selectedIndex = 0; // Set the dropdown to the first option (default)
+
+        // Close any existing popup when year changes
+        closePopup(); 
     } else {
         alert("Please select a year first!");
+        // Close any existing popup when year changes
+        closePopup(); 
     }
+    
 });
 
 document.getElementById('regionSelection').addEventListener('change', function() {
@@ -7555,6 +7561,9 @@ document.getElementById('regionSelection').addEventListener('change', function()
          // Reset 'electoralSelection1' to its default state
         const electoralSelection2 = document.getElementById('electoralSelection2');
         electoralSelection2.selectedIndex = 0; // Set the dropdown to the first option (default)
+
+        // Close any existing popup when year changes
+        closePopup(); 
     }
 });
 
@@ -7584,6 +7593,9 @@ document.getElementById('regionSelection').addEventListener('change', function()
          // Reset 'electoralSelection1' to its default state
         const electoralSelection2 = document.getElementById('electoralSelection2');
         electoralSelection2.selectedIndex = 0; // Set the dropdown to the first option (default)
+
+        // Close any existing popup when year changes
+        closePopup(); 
     }
 });
 
@@ -7613,6 +7625,9 @@ document.getElementById('regionSelection').addEventListener('change', function()
          // Reset 'electoralSelection1' to its default state
         const electoralSelection2 = document.getElementById('electoralSelection2');
         electoralSelection2.selectedIndex = 0; // Set the dropdown to the first option (default)
+
+        // Close any existing popup when year changes
+        closePopup(); 
     }
 });
 
@@ -8428,7 +8443,11 @@ var scaleFactor = 0.5; // scale factor for radius size
   document.getElementById('yearSelection').addEventListener('change', function () {
     var selectedYear = this.value; // Get the selected year value
     toggleCandidatesButton(parseInt(selectedYear) || 0); // Call the function with the selected year
+
+    // Close any existing popup when year changes
+    closePopup(); 
   });
+
 
   // Ensure the button appears on initial page load if year is 2024
   window.onload = function () {

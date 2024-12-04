@@ -14,4 +14,4 @@ python manage.py collectstatic --no-input
 python manage.py migrate
 
 # Set permissions for static files
-chmod -R 755 staticfiles/
+#chmod -R 755 staticfiles/
