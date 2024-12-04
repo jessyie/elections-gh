@@ -1968,7 +1968,7 @@ function loadChartData(selectedYear, region, census, electoral) {
     if (selectedYear === "2024") {
 
         const isProduction = '0.0.0.0' !== "localhost";
-        const protocol = isProduction ? "ws:" : "ws:";
+        const protocol = isProduction ? "wss:" : "ws:";
         const host = window.location.hostname;
         const port = isProduction ? ":8001" : ":8001";  // No port for production, specify for dev
         const path = "/ws/data-updates/";
@@ -8467,7 +8467,7 @@ function generateCandidateList(identifier, isConstCode) {
 
     if (isConstCode) {
       // Generate the image path for ConstCode images
-      imagePath = `${staticBaseUrl}logo/${identifier}${party}.png`; // Example: A2034_NPP.png
+      imagePath = `${staticBaseUrl}logos/${identifier}${party}.png`; // Example: A2034_NPP.png
     } else {
       // Generate the image path for Region-based images
       imagePath = `${staticBaseUrl}logo/${party}.png`; // Example: NPP.png
