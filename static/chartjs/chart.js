@@ -8467,7 +8467,7 @@ function generateCandidateList(identifier, isConstCode) {
 
     if (isConstCode) {
       // Generate the image path for ConstCode images
-      imagePath = `${staticBaseUrl}logos/${identifier}${party}.png`; // Example: A2034_NPP.png
+      imagePath = `${staticBaseUrl}logo/${identifier}${party}.png`; // Example: A2034_NPP.png
     } else {
       // Generate the image path for Region-based images
       imagePath = `${staticBaseUrl}logo/${party}.png`; // Example: NPP.png
