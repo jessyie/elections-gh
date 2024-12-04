@@ -1967,7 +1967,7 @@ function loadChartData(selectedYear, region, census, electoral) {
     // If the selected year is 2024, open the WebSocket connection for real-time data
     if (selectedYear === "2024") {
 
-        const isProduction = window.location.hostname !== "localhost";
+        const isProduction = '0.0.0.0' !== "localhost";
         const protocol = isProduction ? "wss:" : "ws:";
         const host = window.location.hostname;
         const port = isProduction ? ":8001" : ":8001";  // No port for production, specify for dev
@@ -1976,6 +1976,7 @@ function loadChartData(selectedYear, region, census, electoral) {
         if (socket === null) {
 
             socket = new WebSocket(`${protocol}//${host}${port}${path}`);
+            //socket = new WebSocket("ws://127.0.0.1:8001/ws/data-updates/");
 
             // WebSocket open event
             socket.onopen = function() {
