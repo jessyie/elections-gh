@@ -1970,7 +1970,7 @@ function loadChartData(selectedYear, region, census, electoral) {
         const isProduction = window.location.hostname !== "localhost";
         const protocol = isProduction ? "wss:" : "ws:";
         const host = window.location.hostname;
-        const port = isProduction ? "" : ":8001";  // No port for production, specify for dev
+        const port = isProduction ? "8001" : ":8001";  // No port for production, specify for dev
         const path = "/ws/data-updates/";
 
         if (socket === null) {
