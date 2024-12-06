@@ -2076,9 +2076,11 @@ function updateChart(data, selectedYear) {
         map.removeLayer(presidentialConst_16_REG_2024);
     }
 
-    if (flashCONST2REG_2024 && map.hasLayer(flashCONST2REG_2024)) {
-        map.removeLayer(flashCONST2REG_2024);
+    if (flashCONST2REG_2024 && map2.hasLayer(flashCONST2REG_2024)) {
+        map2.removeLayer(flashCONST2REG_2024);
     }
+
+    
 
     
 
@@ -3057,9 +3059,11 @@ function updateCharts(selectedYear, region, census, electoral) {
         map.removeLayer(presidentialConst_16_REG_2024);
     }
 
-    if (flashCONST2REG_2024 && map.hasLayer(flashCONST2REG_2024)) {
-        map.removeLayer(flashCONST2REG_2024);
+    if (flashCONST2REG_2024 && map2.hasLayer(flashCONST2REG_2024)) {
+        map2.removeLayer(flashCONST2REG_2024);
     }
+
+
 
     
 
@@ -4109,9 +4113,11 @@ function updateChartsRegions(selectedYear, region, census, electoral) {
         map.removeLayer(presidentialConst_16_REG_2024);
     }
 
-    if (flashCONST2REG_2024 && map.hasLayer(flashCONST2REG_2024)) {
-        map.removeLayer(flashCONST2REG_2024);
+    if (flashCONST2REG_2024 && map2.hasLayer(flashCONST2REG_2024)) {
+        map2.removeLayer(flashCONST2REG_2024);
     }
+
+    
 
 
     // current commenting test
@@ -5130,10 +5136,11 @@ function updateCharts2(year, selectedRegion, census, electoral) {
         map.removeLayer(presidentialConst_16_REG_2024);
     }
 
-    if (flashCONST2REG_2024 && map.hasLayer(flashCONST2REG_2024)) {
-        map.removeLayer(flashCONST2REG_2024);
+    if (flashCONST2REG_2024 && map2.hasLayer(flashCONST2REG_2024)) {
+        map2.removeLayer(flashCONST2REG_2024);
     }
 
+    
 
     overlayMaps2['Flash Incident 275 Constinuencies'].clearLayers();
 
@@ -5461,12 +5468,12 @@ function updateCharts2(year, selectedRegion, census, electoral) {
     //___________
 
 
-    //var mergedFlashCONST_GHMap2 = data.mergedFlashCONST_GHMap2
+    var mergedFlashCONST_GHMap2 = data.mergedFlashCONST_GHMap2
 
     var mergedFlashCONST_GHMap2024 = data.mergedFlashCONST_GHMap2024
 
     if (year === "2004" || year === "2008" || year === "2009" || year === "2012" || year === "2016" || year === "2020") {
-        flashCONST2REG = jsonflashCONST2_choropleth(mergedFlashCONST_GHMap2024).addTo(map2);
+        flashCONST2REG = jsonflashCONST2_choropleth(mergedFlashCONST_GHMap2).addTo(map2);
         bindClickToDynamicLayers(flashCONST2REG, 'map2');
     }else {
         flashCONST2REG_2024 = jsonflashCONST2_choropleth(mergedFlashCONST_GHMap2024).addTo(map2);

@@ -534,7 +534,7 @@ def initialise_chart(year = '2024', region='Ashanti', census='Total_Pop', electo
 
     # GROUPING FLASH CONST BY REGION
 
-    flash_CONSTdf2020_GROUPED = flash_CONSTdf2020.groupby(['RegName'])
+    flash_CONSTdf2020_GROUPED = flash_CONSTdf.groupby(['RegName'])
     
     # Check if the region exists in the grouped data
     if region in flash_CONSTdf2020_GROUPED.groups:
@@ -1820,13 +1820,16 @@ def initialise_chart(year = '2024', region='Ashanti', census='Total_Pop', electo
 
     mergedFlashCONST_GHMap2 = mergedFlashCONST_GHMap2_json.to_json()
 
-    #print(mergedFlashCONST_GHMap2_json)
+    #print("AAAA", mergedFlashCONST_GHMap2_json)
 
     # 2024
 
     mergedFlashCONST_GHMap2_json2024 = GHMapConst2024.merge(flash_CONSTdf2020_GROUPED_DONE, left_on="ConstCode", right_on="ConstCode")
 
     mergedFlashCONST_GHMap2024 = mergedFlashCONST_GHMap2_json2024.to_json()
+
+    #print("BBBB", mergedFlashCONST_GHMap2_json2024)
+
 
     #/////////////////////////////
 
@@ -1852,6 +1855,8 @@ def initialise_chart(year = '2024', region='Ashanti', census='Total_Pop', electo
     mergedFlashPS_GHMap2_json = GHMap_PS.merge(flash_PSdf, left_on="PS Code", right_on="PSCode")
 
     mergedFlashPS_GHMap2 = mergedFlashPS_GHMap2_json.to_json()
+
+    #print(mergedFlashPS_GHMap2_json)
 
 
     #////////////////////////////////////////////
