@@ -2576,12 +2576,30 @@ function updateChart(data, selectedYear) {
 
         ] // Colors for other years
 
+    const colorsC = [
+        '#0390fc',
+        '#308a0a',
+        '#f75464',
+        '#ded712',
+        '#e3051b',
+        '#9d0fbd',
+        '#ebd059',
+        '#b58931',
+        '#8d76f5',
+        '#f77c9d',
+        '#f28907',
+        '#d460eb',
+        '#d18f38',
+        ]
+
     // Deciding the colors based on the year
     let chartColors;
     if (selectedYear === '2004') {
     chartColors = colorsA;
+    } else if (selectedYear === '2024') {
+    chartColors = colorsC;
     } else {
-    chartColors = colorsB;
+        chartColors = colorsB;
     }
 
 
@@ -3558,12 +3576,30 @@ function updateCharts(selectedYear, region, census, electoral) {
 
         ] // Colors for other years
 
+    const colorsC = [
+        '#0390fc',
+        '#308a0a',
+        '#f75464',
+        '#ded712',
+        '#e3051b',
+        '#9d0fbd',
+        '#ebd059',
+        '#b58931',
+        '#8d76f5',
+        '#f77c9d',
+        '#f28907',
+        '#d460eb',
+        '#d18f38',
+        ]
+
     // Deciding the colors based on the year
     let chartColors;
     if (selectedYear === '2004') {
     chartColors = colorsA;
+    } else if (selectedYear === '2024') {
+    chartColors = colorsC;
     } else {
-    chartColors = colorsB;
+        chartColors = colorsB;
     }
 
 
@@ -4602,12 +4638,30 @@ function updateChartsRegions(selectedYear, region, census, electoral) {
 
         ] // Colors for other years
 
+    const colorsC = [
+        '#0390fc',
+        '#308a0a',
+        '#f75464',
+        '#ded712',
+        '#e3051b',
+        '#9d0fbd',
+        '#ebd059',
+        '#b58931',
+        '#8d76f5',
+        '#f77c9d',
+        '#f28907',
+        '#d460eb',
+        '#d18f38',
+        ]
+
     // Deciding the colors based on the year
     let chartColors;
     if (selectedYear === '2004') {
     chartColors = colorsA;
+    } else if (selectedYear === '2024') {
+    chartColors = colorsC;
     } else {
-    chartColors = colorsB;
+        chartColors = colorsB;
     }
 
 
@@ -5573,12 +5627,30 @@ function updateCharts2(year, selectedRegion, census, electoral) {
         ] // Colors for other years
 
 
+    const colorsC = [
+        '#0390fc',
+        '#308a0a',
+        '#f75464',
+        '#ded712',
+        '#e3051b',
+        '#9d0fbd',
+        '#ebd059',
+        '#b58931',
+        '#8d76f5',
+        '#f77c9d',
+        '#f28907',
+        '#d460eb',
+        '#d18f38',
+        ]
+
     // Deciding the colors based on the year
     let chartColors;
-    if (year === '2004') {
+    if (selectedYear === '2004') {
     chartColors = colorsA;
+    } else if (selectedYear === '2024') {
+    chartColors = colorsC;
     } else {
-    chartColors = colorsB;
+        chartColors = colorsB;
     }
     
 
