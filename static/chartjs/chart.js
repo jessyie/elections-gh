@@ -7942,6 +7942,7 @@ var scaleFactor = 0.5; // scale factor for radius size
         else {
             map.removeLayer(polling_stationData);
         }
+        map.removeLayer(polling_stationData);
         map.removeLayer(regionsData);
         map.removeLayer(overlayMaps['Parliament 10 Regions']);
         map.removeLayer(overlayMaps['Presidential 10 Regions']);
@@ -7951,7 +7952,7 @@ var scaleFactor = 0.5; // scale factor for radius size
         map.removeLayer(overlayMaps['Presidential 230 constituencies']);
         map.removeLayer(overlayMaps['Parliament 275 constituencies']);
         map.removeLayer(overlayMaps['Presidential 275 constituencies']);
-        map.removeLayer(overlayMaps['Parliament 276 constituencies']);
+        map.addLayer(overlayMaps['Parliament 276 constituencies']);
         map.removeLayer(overlayMaps['Presidential 276 constituencies']);
         map.addLayer(regions16Data);
         
